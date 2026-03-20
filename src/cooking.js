@@ -27,11 +27,6 @@ const Cooking = (() => {
 
   function open() {
     // 焼ける肉があるか確認
-    cookableMeats = Inventory.getAll().filter(item =>
-      RAW_MEATS.some(id => Inventory.hasItem(id) && item.name === Inventory.getItem(id).name)
-    );
-
-    // IDベースで取得し直す
     cookableMeats = [];
     for (const meatId of RAW_MEATS) {
       const item = Inventory.getItem(meatId);
@@ -77,7 +72,6 @@ const Cooking = (() => {
     } else if (phase === 'result') {
       resultTimer += 0.016;
       if (resultTimer > 0.5 && (Engine.isKeyJustPressed(' ') || Engine.isKeyJustPressed('Enter'))) {
-        // メニューに戻るか閉じる
         // 焼ける肉を再チェック
         cookableMeats = [];
         for (const meatId of RAW_MEATS) {
@@ -105,10 +99,10 @@ const Cooking = (() => {
 
     // こんがり肉か普通の焼き肉か判定
     if (Math.random() < data.kongari) {
-      Inventory.add('kongari_' + meat.id, 'こんがり' + data.name, 'うまく焼けた！HP大回復');
+      Inventory.add('kongari_' + meat.id, 'こんがり' + data.name, 'うまく焼けた！HP大回復', 30);
       resultMessage = `${data.name}をじっくり焼いた...\nこんがり${data.name}ができた！`;
     } else {
-      Inventory.add('yaki_' + meat.id, data.name + 'の焼き肉', 'まあまあの焼き加減。HP回復');
+      Inventory.add('yaki_' + meat.id, data.name + 'の焼き肉', 'まあまあの焼き加減。HP回復', 15);
       resultMessage = `${data.name}を焼いた...\n${data.name}の焼き肉ができた！`;
     }
 
@@ -129,12 +123,10 @@ const Cooking = (() => {
     // 焚き火の炎を大きく描画
     const cx = W / 2, cy = H * 0.3;
     const t = performance.now() / 200;
-    // 石の囲い
     ctx.fillStyle = '#666';
     ctx.beginPath();
     ctx.ellipse(cx, cy + 20, 40, 20, 0, 0, Math.PI * 2);
     ctx.fill();
-    // 炎
     for (let i = 0; i < 5; i++) {
       const ox = Math.sin(t + i * 1.3) * 8;
       const oy = Math.cos(t + i * 0.9) * 4;
@@ -145,7 +137,6 @@ const Cooking = (() => {
     }
 
     if (phase === 'select') {
-      // メニューウィンドウ
       const mw = 280, mh = 40 + cookableMeats.length * 30;
       const mx = W / 2 - mw / 2, my = H * 0.5;
       ctx.fillStyle = 'rgba(0,0,0,0.9)';
@@ -167,13 +158,11 @@ const Cooking = (() => {
         ctx.fillText(`${i === cursor ? '▶' : '　'} ${meat.name}  x${meat.count}`, mx + 16, y);
       });
 
-      // ヒント
       ctx.fillStyle = '#888';
       ctx.font = '10px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('Escキーで戻る', W / 2, my + mh + 16);
     } else if (phase === 'result') {
-      // 結果メッセージ
       const mw = 350, mh = 80;
       const mx = W / 2 - mw / 2, my = H * 0.55;
       ctx.fillStyle = 'rgba(0,0,0,0.9)';

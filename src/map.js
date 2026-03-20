@@ -10,24 +10,31 @@ const GameMap = (() => {
     FLOOR: 5,
     TREE: 6,
     BONFIRE: 7,
+    CAVE_WALL: 8,
+    CAVE_FLOOR: 9,
   };
 
   // タイルの色
   const TILE_COLORS = {
-    [TILES.GRASS]:   '#4a8c3f',
-    [TILES.WALL]:    '#6b6b6b',
-    [TILES.WATER]:   '#3a7ecf',
-    [TILES.PATH]:    '#c4a35a',
-    [TILES.DOOR]:    '#8b5e3c',
-    [TILES.FLOOR]:   '#b0a080',
-    [TILES.TREE]:    '#2d6b2d',
-    [TILES.BONFIRE]: '#4a8c3f',
+    [TILES.GRASS]:      '#4a8c3f',
+    [TILES.WALL]:       '#6b6b6b',
+    [TILES.WATER]:      '#3a7ecf',
+    [TILES.PATH]:       '#c4a35a',
+    [TILES.DOOR]:       '#8b5e3c',
+    [TILES.FLOOR]:      '#b0a080',
+    [TILES.TREE]:       '#2d6b2d',
+    [TILES.BONFIRE]:    '#4a8c3f',
+    [TILES.CAVE_WALL]:  '#2a2a3a',
+    [TILES.CAVE_FLOOR]: '#4a4a5a',
   };
 
   // 通行不可タイル
-  const SOLID_TILES = new Set([TILES.WALL, TILES.WATER, TILES.TREE]);
+  const SOLID_TILES = new Set([TILES.WALL, TILES.WATER, TILES.TREE, TILES.CAVE_WALL]);
 
-  // マップデータ (20x15)
+  const W = 8; // CAVE_WALL shorthand
+  const F = 9; // CAVE_FLOOR shorthand
+
+  // マップデータ
   const maps = {
     village: {
       width: 20,
@@ -40,8 +47,8 @@ const GameMap = (() => {
         6,0,0,1,5,5,1,3,0,0,0,0,3,0,0,1,1,1,0,6,
         6,0,0,1,5,5,4,3,0,0,0,0,3,0,0,1,5,1,0,6,
         6,0,0,1,1,1,1,3,0,0,0,0,3,3,3,1,5,1,0,6,
-        6,0,0,0,0,0,0,3,0,0,0,0,0,0,3,1,4,1,0,6,
-        6,0,0,0,0,0,0,3,3,3,0,0,0,0,3,1,1,1,0,6,
+        6,0,0,0,0,0,0,3,0,0,0,0,0,0,3,1,1,4,3,3,
+        6,0,0,0,0,0,0,3,3,3,0,0,0,0,3,0,0,0,0,6,
         6,0,2,2,0,0,0,0,0,3,0,0,0,0,3,0,0,0,0,6,
         6,0,2,2,0,0,0,0,0,3,3,3,3,3,3,0,0,0,0,6,
         6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,
@@ -67,15 +74,59 @@ const GameMap = (() => {
           ]
         },
       ],
+      exits: [
+        { x: 19, y: 7, target: 'dungeon', targetX: 1, targetY: 7 },
+      ],
+    },
+    dungeon: {
+      width: 20,
+      height: 15,
+      data: [
+        W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,
+        W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,
+        W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,
+        W,W,W,W,W,F,F,F,F,F,F,F,F,F,F,W,W,W,W,W,
+        W,W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,W,
+        W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,
+        F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,
+        F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,
+        F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,
+        W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,
+        W,W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,W,
+        W,W,W,W,W,F,F,F,F,F,F,F,F,F,F,W,W,W,W,W,
+        W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,
+        W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,
+        W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,
+      ],
+      playerStart: { x: 1, y: 7 },
+      npcs: [
+        { id: 'warning_sign', x: 4, y: 7, name: '看板', type: 'sign', color: '#8b6040',
+          dialog: [
+            'キケン！この先に魔獣ムラコンがいます。',
+            '強すぎるので引き返して下さい',
+          ]
+        },
+      ],
+      exits: [
+        { x: 0, y: 6, target: 'village', targetX: 18, targetY: 7 },
+        { x: 0, y: 7, target: 'village', targetX: 18, targetY: 7 },
+        { x: 0, y: 8, target: 'village', targetX: 18, targetY: 7 },
+      ],
     },
   };
 
   let currentMap = null;
+  let currentMapName = '';
   let bonfireAnim = 0;
 
   function load(mapName) {
     currentMap = maps[mapName];
+    currentMapName = mapName;
     return currentMap;
+  }
+
+  function getCurrentMapName() {
+    return currentMapName;
   }
 
   function getTile(x, y) {
@@ -86,6 +137,11 @@ const GameMap = (() => {
 
   function isSolid(x, y) {
     return SOLID_TILES.has(getTile(x, y));
+  }
+
+  function getExit(x, y) {
+    if (!currentMap || !currentMap.exits) return null;
+    return currentMap.exits.find(e => e.x === x && e.y === y) || null;
   }
 
   function render(ctx) {
@@ -160,10 +216,41 @@ const GameMap = (() => {
           ctx.font = '9px sans-serif';
           ctx.textAlign = 'center';
           ctx.fillText('焚き火', x * ts + 16, y * ts - 2);
+        } else if (tile === TILES.CAVE_WALL) {
+          // 洞窟の壁（暗い岩）
+          ctx.fillStyle = '#3a3a4a';
+          ctx.fillRect(x * ts + 2, y * ts + 2, ts - 4, ts - 4);
+          ctx.fillStyle = '#22222f';
+          ctx.fillRect(x * ts + 4, y * ts + 8, 8, 6);
+          ctx.fillRect(x * ts + 18, y * ts + 16, 6, 8);
+        } else if (tile === TILES.CAVE_FLOOR) {
+          // 洞窟の地面（少し装飾）
+          ctx.fillStyle = '#555568';
+          ctx.fillRect(x * ts + 10, y * ts + 12, 3, 2);
+          ctx.fillRect(x * ts + 22, y * ts + 22, 2, 2);
         }
       }
     }
+
+    // ダンジョンの場合、東側出口に矢印表示
+    if (currentMapName === 'village') {
+      // 東の出口マーカー
+      ctx.fillStyle = '#ffe080';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('→ダンジョン', 19 * ts + ts / 2, 7 * ts - 4);
+    }
+    if (currentMapName === 'dungeon') {
+      // 西の出口マーカー
+      ctx.fillStyle = '#80ffe0';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('←村へ戻る', 0 * ts + ts, 6 * ts - 4);
+    }
   }
 
-  return { TILES, load, getTile, isSolid, render, get current() { return currentMap; } };
+  return {
+    TILES, load, getTile, isSolid, render, getExit, getCurrentMapName,
+    get current() { return currentMap; }
+  };
 })();

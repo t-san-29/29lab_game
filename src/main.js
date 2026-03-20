@@ -1,7 +1,7 @@
 // メインエントリーポイント - ゲームの初期化と実行
 (() => {
   // マップ読み込み
-  const map = GameMap.load('village');
+  let map = GameMap.load('village');
 
   // プレイヤー初期化
   Player.init(map.playerStart.x, map.playerStart.y);
@@ -15,6 +15,17 @@
     '知らない村に来てしまったみたいだ。',
     'まずは村人に話しかけてみよう。',
   ]);
+
+  // マップ遷移
+  function changeMap(mapName, targetX, targetY) {
+    map = GameMap.load(mapName);
+    Player.init(targetX, targetY);
+    NPC.init(map.npcs);
+    // マップ移動時のステップカウントリセット
+    stepCount = 0;
+    lastPlayerX = targetX;
+    lastPlayerY = targetY;
+  }
 
   // ランダムエンカウント
   let stepCount = 0;
@@ -36,6 +47,14 @@
     if (Math.random() < ENCOUNTER_CHANCE) {
       stepCount = 0;
       Battle.start();
+    }
+  }
+
+  // マップ出口チェック
+  function checkExit() {
+    const exit = GameMap.getExit(Player.x, Player.y);
+    if (exit) {
+      changeMap(exit.target, exit.targetX, exit.targetY);
     }
   }
 
@@ -80,6 +99,7 @@
     Player.update(dt);
     NPC.update();
     checkBonfire();
+    checkExit();
     checkEncounter();
   }
 
@@ -112,11 +132,11 @@
     // ステータス表示
     const stats = Battle.getPlayerStats();
     ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.fillRect(0, 0, 200, 22);
+    ctx.fillRect(0, 0, 250, 22);
     ctx.fillStyle = '#fff';
     ctx.font = '12px sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText(`Lv${stats.level}  HP ${stats.hp}  EXP ${stats.exp}/${stats.nextExp}`, 8, 15);
+    ctx.fillText(`Lv${stats.level}  HP ${stats.hp}/${stats.maxHp}  EXP ${stats.exp}/${stats.nextExp}`, 8, 15);
 
     // 操作説明
     ctx.fillStyle = 'rgba(255,255,255,0.4)';

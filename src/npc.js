@@ -26,7 +26,6 @@ const NPC = (() => {
 
   function update() {
     if (activeDialog) {
-      // スペースキーで次のセリフ / 会話終了
       if (Engine.isKeyJustPressed(' ') || Engine.isKeyJustPressed('Enter')) {
         activeDialog.index++;
         if (activeDialog.index >= activeDialog.lines.length) {
@@ -52,18 +51,35 @@ const NPC = (() => {
       const px = npc.x * ts;
       const py = npc.y * ts;
 
-      // 体
-      ctx.fillStyle = npc.color || '#aaa';
-      ctx.fillRect(px + 6, py + 10, 20, 18);
-
-      // 頭
-      ctx.fillStyle = '#ffcc99';
-      ctx.fillRect(px + 8, py + 2, 16, 12);
-
-      // 目
-      ctx.fillStyle = '#333';
-      ctx.fillRect(px + 10, py + 6, 3, 3);
-      ctx.fillRect(px + 19, py + 6, 3, 3);
+      if (npc.type === 'sign') {
+        // 看板の描画
+        // 支柱
+        ctx.fillStyle = '#6a4a2a';
+        ctx.fillRect(px + 13, py + 16, 6, 16);
+        // 板
+        ctx.fillStyle = '#a07040';
+        ctx.fillRect(px + 4, py + 4, 24, 16);
+        ctx.strokeStyle = '#6a4a2a';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(px + 4, py + 4, 24, 16);
+        // テキスト
+        ctx.fillStyle = '#fff';
+        ctx.font = '7px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('!注意!', px + ts / 2, py + 16);
+      } else {
+        // 通常NPCの描画
+        // 体
+        ctx.fillStyle = npc.color || '#aaa';
+        ctx.fillRect(px + 6, py + 10, 20, 18);
+        // 頭
+        ctx.fillStyle = '#ffcc99';
+        ctx.fillRect(px + 8, py + 2, 16, 12);
+        // 目
+        ctx.fillStyle = '#333';
+        ctx.fillRect(px + 10, py + 6, 3, 3);
+        ctx.fillRect(px + 19, py + 6, 3, 3);
+      }
 
       // 名前
       ctx.fillStyle = '#fff';
@@ -81,16 +97,22 @@ const NPC = (() => {
     const boxH = 100;
     const boxY = H - boxH - 10;
 
-    // ダイアログボックス
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+    // ダイアログボックス（ドラクエ風の二重枠）
+    ctx.fillStyle = 'rgba(0, 0, 40, 0.92)';
     ctx.fillRect(10, boxY, W - 20, boxH);
+    // 外枠
     ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3;
     ctx.strokeRect(10, boxY, W - 20, boxH);
+    // 内枠
+    ctx.strokeStyle = '#aaa';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(14, boxY + 4, W - 28, boxH - 8);
 
-    // 名前（主人公は水色）
+    // 名前（主人公は水色、看板は黄色）
     const isProtag = activeDialog.npc.name === '主人公';
-    ctx.fillStyle = isProtag ? '#80d0ff' : '#f0d060';
+    const isSign = activeDialog.npc.type === 'sign';
+    ctx.fillStyle = isProtag ? '#80d0ff' : (isSign ? '#ff8060' : '#f0d060');
     ctx.font = 'bold 14px sans-serif';
     ctx.textAlign = 'left';
     ctx.fillText(activeDialog.npc.name, 24, boxY + 22);
