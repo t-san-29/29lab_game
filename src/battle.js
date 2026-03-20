@@ -1,40 +1,56 @@
 // ドラクエ風ターン制バトルシステム
 const Battle = (() => {
-  // === 敵（動物）データ ===
+  // === 敵（動物）データ === HP全て2/3に調整
   const ENEMIES = [
     {
       id: 'slime_rabbit', name: 'スライムうさぎ',
-      hp: 12, atk: 3, def: 1, exp: 5,
+      hp: 8, atk: 3, def: 1, exp: 5,
       meat: { id: 'rabbit_meat', name: 'うさぎ肉', desc: 'やわらかくておいしい', healAmount: 5 },
+      material: { id: 'rabbit_fur', name: 'うさぎの毛皮', desc: '柔らかい毛皮', dropRate: 0.6 },
       color: '#e8a0c8', draw: drawRabbit,
     },
     {
       id: 'wild_boar', name: 'イノシシ',
-      hp: 25, atk: 6, def: 3, exp: 12,
+      hp: 17, atk: 6, def: 3, exp: 12,
       meat: { id: 'boar_meat', name: 'イノシシ肉', desc: 'ジビエの王様', healAmount: 5 },
+      material: { id: 'boar_tusk', name: 'イノシシの牙', desc: '鋭い牙', dropRate: 0.5 },
       color: '#8b6040', draw: drawBoar,
     },
     {
       id: 'wild_chicken', name: 'ヤドリドリ',
-      hp: 8, atk: 2, def: 0, exp: 3,
+      hp: 5, atk: 2, def: 0, exp: 3,
       meat: { id: 'chicken_meat', name: 'とり肉', desc: 'ジューシーなもも肉', healAmount: 5 },
+      material: { id: 'chicken_feather', name: 'とりの羽', desc: 'ふわふわの羽', dropRate: 0.7 },
       color: '#e0c060', draw: drawChicken,
     },
     {
       id: 'bear', name: 'ツキノワグマ',
-      hp: 45, atk: 10, def: 5, exp: 25,
+      hp: 30, atk: 10, def: 5, exp: 25,
       meat: { id: 'bear_meat', name: 'クマ肉', desc: '力がみなぎる味', healAmount: 5 },
+      material: { id: 'bear_claw', name: 'クマの爪', desc: '鋭く頑丈な爪', dropRate: 0.4 },
       color: '#4a3a2a', draw: drawBear,
     },
     {
       id: 'deer', name: 'シカ',
-      hp: 18, atk: 4, def: 2, exp: 8,
+      hp: 12, atk: 4, def: 2, exp: 8,
       meat: { id: 'deer_meat', name: 'シカ肉', desc: 'さっぱりした赤身', healAmount: 5 },
+      material: { id: 'deer_antler', name: 'シカの角', desc: '立派な角', dropRate: 0.5 },
       color: '#b08050', draw: drawDeer,
     },
   ];
 
-  // === 描画関数（ドット絵風） ===
+  // ボスデータ
+  const BOSSES = {
+    murakon: {
+      id: 'murakon', name: '魔獣ムラコン',
+      hp: 200, atk: 15, def: 8, exp: 100,
+      meat: { id: 'murakon_fang', name: 'ムラコンの牙', desc: '魔力を帯びた牙' },
+      material: { id: 'murakon_scale', name: 'ムラコンの鱗', desc: '禍々しい鱗', dropRate: 1.0 },
+      color: '#8020a0', draw: drawMurakon, isBoss: true,
+    },
+  };
+
+  // === 描画関数 ===
   function drawRabbit(ctx, cx, cy) {
     ctx.fillStyle = '#e8a0c8';
     ctx.fillRect(cx - 15, cy - 55, 10, 30);
@@ -43,132 +59,111 @@ const Battle = (() => {
     ctx.fillRect(cx - 12, cy - 50, 4, 20);
     ctx.fillRect(cx + 8, cy - 50, 4, 20);
     ctx.fillStyle = '#e8a0c8';
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, 25, 20, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(cx, cy - 18, 18, 15, 0, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx, cy, 25, 20, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx, cy - 18, 18, 15, 0, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#c02040';
-    ctx.beginPath();
-    ctx.arc(cx - 7, cy - 20, 3, 0, Math.PI * 2);
-    ctx.arc(cx + 7, cy - 20, 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#ff6080';
-    ctx.fillRect(cx - 2, cy - 14, 4, 3);
+    ctx.beginPath(); ctx.arc(cx - 7, cy - 20, 3, 0, Math.PI * 2); ctx.arc(cx + 7, cy - 20, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ff6080'; ctx.fillRect(cx - 2, cy - 14, 4, 3);
   }
 
   function drawBoar(ctx, cx, cy) {
     ctx.fillStyle = '#8b6040';
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, 40, 28, 0, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx, cy, 40, 28, 0, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#7a5030';
-    ctx.beginPath();
-    ctx.ellipse(cx - 30, cy - 5, 22, 18, -0.2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(cx - 50, cy - 8, 8, 4);
-    ctx.fillRect(cx - 50, cy + 2, 8, 4);
-    ctx.fillStyle = '#ff3030';
-    ctx.beginPath();
-    ctx.arc(cx - 38, cy - 10, 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#5a3a20';
-    ctx.fillRect(cx - 20, cy + 20, 8, 15);
-    ctx.fillRect(cx + 12, cy + 20, 8, 15);
+    ctx.beginPath(); ctx.ellipse(cx - 30, cy - 5, 22, 18, -0.2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.fillRect(cx - 50, cy - 8, 8, 4); ctx.fillRect(cx - 50, cy + 2, 8, 4);
+    ctx.fillStyle = '#ff3030'; ctx.beginPath(); ctx.arc(cx - 38, cy - 10, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#5a3a20'; ctx.fillRect(cx - 20, cy + 20, 8, 15); ctx.fillRect(cx + 12, cy + 20, 8, 15);
   }
 
   function drawChicken(ctx, cx, cy) {
     ctx.fillStyle = '#e0c060';
-    ctx.beginPath();
-    ctx.ellipse(cx, cy + 5, 22, 18, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(cx, cy - 18, 12, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx, cy + 5, 22, 18, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy - 18, 12, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#e03030';
-    ctx.beginPath();
-    ctx.arc(cx, cy - 32, 6, 0, Math.PI * 2);
-    ctx.arc(cx - 5, cy - 28, 4, 0, Math.PI * 2);
-    ctx.arc(cx + 5, cy - 28, 4, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy - 32, 6, 0, Math.PI * 2); ctx.arc(cx - 5, cy - 28, 4, 0, Math.PI * 2); ctx.arc(cx + 5, cy - 28, 4, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#f0a020';
-    ctx.beginPath();
-    ctx.moveTo(cx - 2, cy - 16);
-    ctx.lineTo(cx - 10, cy - 13);
-    ctx.lineTo(cx - 2, cy - 10);
-    ctx.fill();
-    ctx.fillStyle = '#000';
-    ctx.beginPath();
-    ctx.arc(cx + 2, cy - 20, 2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#f0a020';
-    ctx.fillRect(cx - 8, cy + 20, 3, 12);
-    ctx.fillRect(cx + 5, cy + 20, 3, 12);
+    ctx.beginPath(); ctx.moveTo(cx - 2, cy - 16); ctx.lineTo(cx - 10, cy - 13); ctx.lineTo(cx - 2, cy - 10); ctx.fill();
+    ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(cx + 2, cy - 20, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#f0a020'; ctx.fillRect(cx - 8, cy + 20, 3, 12); ctx.fillRect(cx + 5, cy + 20, 3, 12);
   }
 
   function drawBear(ctx, cx, cy) {
     ctx.fillStyle = '#4a3a2a';
-    ctx.beginPath();
-    ctx.ellipse(cx, cy + 5, 35, 30, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(cx, cy - 28, 22, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(cx - 18, cy - 44, 8, 0, Math.PI * 2);
-    ctx.arc(cx + 18, cy - 44, 8, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#f0e080';
-    ctx.beginPath();
-    ctx.ellipse(cx, cy - 5, 12, 6, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#6a5a4a';
-    ctx.beginPath();
-    ctx.ellipse(cx, cy - 20, 10, 8, 0, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx, cy + 5, 35, 30, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy - 28, 22, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx - 18, cy - 44, 8, 0, Math.PI * 2); ctx.arc(cx + 18, cy - 44, 8, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#f0e080'; ctx.beginPath(); ctx.ellipse(cx, cy - 5, 12, 6, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#6a5a4a'; ctx.beginPath(); ctx.ellipse(cx, cy - 20, 10, 8, 0, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#ff2020';
-    ctx.beginPath();
-    ctx.arc(cx - 10, cy - 32, 3, 0, Math.PI * 2);
-    ctx.arc(cx + 10, cy - 32, 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#4a3a2a';
-    ctx.fillRect(cx - 40, cy - 10, 12, 30);
-    ctx.fillRect(cx + 28, cy - 10, 12, 30);
+    ctx.beginPath(); ctx.arc(cx - 10, cy - 32, 3, 0, Math.PI * 2); ctx.arc(cx + 10, cy - 32, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#4a3a2a'; ctx.fillRect(cx - 40, cy - 10, 12, 30); ctx.fillRect(cx + 28, cy - 10, 12, 30);
   }
 
   function drawDeer(ctx, cx, cy) {
     ctx.fillStyle = '#b08050';
+    ctx.beginPath(); ctx.ellipse(cx, cy + 5, 30, 22, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx - 20, cy - 20, 14, 12, -0.3, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#8a6a3a'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(cx - 25, cy - 32); ctx.lineTo(cx - 30, cy - 55); ctx.lineTo(cx - 40, cy - 50);
+    ctx.moveTo(cx - 30, cy - 48); ctx.lineTo(cx - 22, cy - 55); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx - 15, cy - 32); ctx.lineTo(cx - 10, cy - 55); ctx.lineTo(cx, cy - 50);
+    ctx.moveTo(cx - 10, cy - 48); ctx.lineTo(cx - 18, cy - 55); ctx.stroke();
+    ctx.fillStyle = '#333'; ctx.beginPath(); ctx.arc(cx - 28, cy - 22, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#8a6a3a'; ctx.fillRect(cx - 15, cy + 22, 6, 18); ctx.fillRect(cx + 10, cy + 22, 6, 18);
+  }
+
+  function drawMurakon(ctx, cx, cy) {
+    // 巨大な魔獣
+    // 体
+    ctx.fillStyle = '#4a1060';
+    ctx.beginPath(); ctx.ellipse(cx, cy + 10, 50, 40, 0, 0, Math.PI * 2); ctx.fill();
+    // 頭
+    ctx.fillStyle = '#6020a0';
+    ctx.beginPath(); ctx.arc(cx, cy - 35, 30, 0, Math.PI * 2); ctx.fill();
+    // 角
+    ctx.fillStyle = '#a040e0';
     ctx.beginPath();
-    ctx.ellipse(cx, cy + 5, 30, 22, 0, 0, Math.PI * 2);
+    ctx.moveTo(cx - 20, cy - 55); ctx.lineTo(cx - 30, cy - 90); ctx.lineTo(cx - 10, cy - 60);
     ctx.fill();
     ctx.beginPath();
-    ctx.ellipse(cx - 20, cy - 20, 14, 12, -0.3, 0, Math.PI * 2);
+    ctx.moveTo(cx + 20, cy - 55); ctx.lineTo(cx + 30, cy - 90); ctx.lineTo(cx + 10, cy - 60);
     ctx.fill();
-    ctx.strokeStyle = '#8a6a3a';
+    // 目（赤く光る）
+    ctx.fillStyle = '#ff0040';
+    ctx.beginPath();
+    ctx.arc(cx - 12, cy - 40, 5, 0, Math.PI * 2);
+    ctx.arc(cx + 12, cy - 40, 5, 0, Math.PI * 2);
+    ctx.fill();
+    // 目の光
+    ctx.fillStyle = '#ff8080';
+    ctx.beginPath();
+    ctx.arc(cx - 12, cy - 41, 2, 0, Math.PI * 2);
+    ctx.arc(cx + 12, cy - 41, 2, 0, Math.PI * 2);
+    ctx.fill();
+    // 牙
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.moveTo(cx - 15, cy - 20); ctx.lineTo(cx - 10, cy - 5); ctx.lineTo(cx - 5, cy - 20);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx + 15, cy - 20); ctx.lineTo(cx + 10, cy - 5); ctx.lineTo(cx + 5, cy - 20);
+    ctx.fill();
+    // 腕
+    ctx.fillStyle = '#4a1060';
+    ctx.fillRect(cx - 55, cy - 15, 15, 40);
+    ctx.fillRect(cx + 40, cy - 15, 15, 40);
+    // 爪
+    ctx.fillStyle = '#a040e0';
+    ctx.fillRect(cx - 58, cy + 20, 4, 10);
+    ctx.fillRect(cx - 52, cy + 22, 4, 10);
+    ctx.fillRect(cx + 46, cy + 20, 4, 10);
+    ctx.fillRect(cx + 52, cy + 22, 4, 10);
+    // オーラ
+    const t = performance.now() / 300;
+    ctx.strokeStyle = `rgba(160, 40, 255, ${0.3 + Math.sin(t) * 0.2})`;
     ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(cx - 25, cy - 32);
-    ctx.lineTo(cx - 30, cy - 55);
-    ctx.lineTo(cx - 40, cy - 50);
-    ctx.moveTo(cx - 30, cy - 48);
-    ctx.lineTo(cx - 22, cy - 55);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(cx - 15, cy - 32);
-    ctx.lineTo(cx - 10, cy - 55);
-    ctx.lineTo(cx, cy - 50);
-    ctx.moveTo(cx - 10, cy - 48);
-    ctx.lineTo(cx - 18, cy - 55);
-    ctx.stroke();
-    ctx.fillStyle = '#333';
-    ctx.beginPath();
-    ctx.arc(cx - 28, cy - 22, 2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#8a6a3a';
-    ctx.fillRect(cx - 15, cy + 22, 6, 18);
-    ctx.fillRect(cx + 10, cy + 22, 6, 18);
+    ctx.beginPath(); ctx.ellipse(cx, cy - 10, 60 + Math.sin(t) * 5, 55 + Math.cos(t) * 5, 0, 0, Math.PI * 2); ctx.stroke();
   }
 
   // === バトル状態 ===
@@ -193,19 +188,15 @@ const Battle = (() => {
   const COMMANDS = ['たたかう', 'ぼうぎょ', 'にげる'];
   let defending = false;
 
-  // プレイヤーステータス（簡易レベルシステム）
+  // プレイヤーステータス
   let level = 1;
   let exp = 0;
   let baseHp = 30;
   let baseAtk = 8;
   let baseDef = 3;
+  let currentHp = -1;
 
-  // 持続HP（バトル外でも保持）
-  let currentHp = -1; // -1 = 未初期化
-
-  function getMaxHp() {
-    return baseHp + level * 5;
-  }
+  function getMaxHp() { return baseHp + level * 5; }
 
   function getCurrentHp() {
     if (currentHp < 0) currentHp = getMaxHp();
@@ -217,7 +208,7 @@ const Battle = (() => {
     const maxHp = getMaxHp();
     const before = currentHp;
     currentHp = Math.min(maxHp, currentHp + amount);
-    return currentHp - before; // 実際の回復量
+    return currentHp - before;
   }
 
   function getPlayerStats() {
@@ -237,7 +228,6 @@ const Battle = (() => {
     if (exp >= needed) {
       exp -= needed;
       level++;
-      // レベルアップ時はHP全回復
       currentHp = getMaxHp();
       return true;
     }
@@ -247,14 +237,24 @@ const Battle = (() => {
   // === バトル開始 ===
   function start() {
     const idx = Math.floor(Math.random() * ENEMIES.length);
-    enemy = { ...ENEMIES[idx] };
+    beginBattle({ ...ENEMIES[idx] });
+  }
+
+  function startBoss(bossId) {
+    const boss = BOSSES[bossId];
+    if (!boss) return;
+    beginBattle({ ...boss });
+  }
+
+  function beginBattle(enemyData) {
+    enemy = enemyData;
     enemyHp = enemy.hp;
 
-    const maxHp = getMaxHp();
-    playerMaxHp = maxHp;
-    playerHp = getCurrentHp(); // 現在HPを引き継ぐ
-    playerAtk = baseAtk + level * 2;
-    playerDef = baseDef + level * 1;
+    const bonus = Equipment.getBonus();
+    playerMaxHp = getMaxHp();
+    playerHp = getCurrentHp();
+    playerAtk = baseAtk + level * 2 + bonus.atk;
+    playerDef = baseDef + level * 1 + bonus.def;
 
     active = true;
     phase = 'select';
@@ -268,14 +268,11 @@ const Battle = (() => {
     shakeAmount = 0;
   }
 
-  function isActive() {
-    return active;
-  }
+  function isActive() { return active; }
 
   // === 更新処理 ===
   function update(dt) {
     if (!active) return;
-
     animTimer += dt;
 
     if (phase === 'select') {
@@ -291,32 +288,19 @@ const Battle = (() => {
     } else if (phase === 'player_attack' || phase === 'enemy_attack') {
       messageTimer += dt;
       if (messageTimer > 0.3) {
-        flashEnemy = false;
-        flashPlayer = false;
-        shakeAmount = 0;
+        flashEnemy = false; flashPlayer = false; shakeAmount = 0;
       }
       if (messageTimer > 1.2) {
         if (phase === 'player_attack') {
-          if (enemyHp <= 0) {
-            onWin();
-          } else {
-            enemyTurn();
-          }
+          enemyHp <= 0 ? onWin() : enemyTurn();
         } else if (phase === 'enemy_attack') {
-          if (playerHp <= 0) {
-            onLose();
-          } else {
-            phase = 'select';
-            defending = false;
-          }
+          playerHp <= 0 ? onLose() : (() => { phase = 'select'; defending = false; })();
         }
       }
     } else if (phase === 'result') {
       messageTimer += dt;
-      if (messageTimer > 2.0) {
-        if (Engine.isKeyJustPressed(' ') || Engine.isKeyJustPressed('Enter')) {
-          active = false;
-        }
+      if (messageTimer > 2.0 && (Engine.isKeyJustPressed(' ') || Engine.isKeyJustPressed('Enter'))) {
+        active = false;
       }
     }
   }
@@ -325,26 +309,22 @@ const Battle = (() => {
     if (cmd === 'たたかう') {
       const dmg = Math.max(1, playerAtk - enemy.def + Math.floor(Math.random() * 4) - 2);
       enemyHp = Math.max(0, enemyHp - dmg);
-      message = `プレイヤーの こうげき！\n${enemy.name}に ${dmg} のダメージ！`;
-      phase = 'player_attack';
-      messageTimer = 0;
-      flashEnemy = true;
-      shakeAmount = 5;
+      message = `ミズキチの こうげき！\n${enemy.name}に ${dmg} のダメージ！`;
+      phase = 'player_attack'; messageTimer = 0; flashEnemy = true; shakeAmount = 5;
     } else if (cmd === 'ぼうぎょ') {
       defending = true;
-      message = 'プレイヤーは みをまもっている！';
-      phase = 'player_attack';
-      messageTimer = 0;
+      message = 'ミズキチは みをまもっている！';
+      phase = 'player_attack'; messageTimer = 0;
     } else if (cmd === 'にげる') {
-      if (Math.random() < 0.5) {
+      if (enemy.isBoss) {
+        message = 'ボスからは逃げられない！';
+        phase = 'player_attack'; messageTimer = 0;
+      } else if (Math.random() < 0.5) {
         message = 'うまく にげきれた！';
-        phase = 'result';
-        resultType = 'run';
-        messageTimer = 0;
+        phase = 'result'; resultType = 'run'; messageTimer = 0;
       } else {
         message = 'しかし まわりこまれてしまった！';
-        phase = 'player_attack';
-        messageTimer = 0;
+        phase = 'player_attack'; messageTimer = 0;
       }
     }
   }
@@ -353,147 +333,112 @@ const Battle = (() => {
     const defMod = defending ? playerDef * 2 : playerDef;
     const dmg = Math.max(1, enemy.atk - defMod + Math.floor(Math.random() * 3) - 1);
     playerHp = Math.max(0, playerHp - dmg);
-    currentHp = playerHp; // 持続HPに反映
-    message = `${enemy.name}の こうげき！\nプレイヤーに ${dmg} のダメージ！`;
-    phase = 'enemy_attack';
-    messageTimer = 0;
-    flashPlayer = true;
-    shakeAmount = 3;
+    currentHp = playerHp;
+    message = `${enemy.name}の こうげき！\nミズキチに ${dmg} のダメージ！`;
+    phase = 'enemy_attack'; messageTimer = 0; flashPlayer = true; shakeAmount = 3;
   }
 
   function onWin() {
     exp += enemy.exp;
     const meat = enemy.meat;
-    Inventory.add(meat.id, meat.name, meat.desc, meat.healAmount);
-
-    currentHp = playerHp; // 戦闘後HPを保持
+    Inventory.add(meat.id, meat.name, meat.desc, meat.healAmount || 0);
+    currentHp = playerHp;
 
     let msg = `${enemy.name}を たおした！\n${meat.name}を てにいれた！  ${enemy.exp}EXP かくとく！`;
 
+    // 素材ドロップ判定
+    if (enemy.material && Math.random() < enemy.material.dropRate) {
+      Inventory.add(enemy.material.id, enemy.material.name, enemy.material.desc);
+      msg += `\n${enemy.material.name}を てにいれた！`;
+    }
+
     if (checkLevelUp()) {
-      msg += `\n🎉 レベルアップ！ Lv${level} になった！`;
+      msg += `\nレベルアップ！ Lv${level} になった！`;
     }
 
     message = msg;
-    phase = 'result';
-    resultType = 'win';
-    messageTimer = 0;
+    phase = 'result'; resultType = 'win'; messageTimer = 0;
   }
 
   function onLose() {
-    // 敗北時はHP半分で復活
     currentHp = Math.floor(getMaxHp() / 2);
-    message = 'プレイヤーは たおれてしまった...\nきぜつから もどった。（HPが半分で回復）';
-    phase = 'result';
-    resultType = 'lose';
-    messageTimer = 0;
+    message = 'ミズキチは たおれてしまった...\nきぜつから もどった。（HPが半分で回復）';
+    phase = 'result'; resultType = 'lose'; messageTimer = 0;
   }
 
   // === 描画 ===
   function render(ctx) {
     if (!active) return;
+    const W = Engine.WIDTH, H = Engine.HEIGHT;
 
-    const W = Engine.WIDTH;
-    const H = Engine.HEIGHT;
-
-    ctx.fillStyle = '#1a2a1a';
+    // 背景
+    ctx.fillStyle = enemy.isBoss ? '#1a0a2a' : '#1a2a1a';
     ctx.fillRect(0, 0, W, H);
-
-    ctx.fillStyle = '#3a5a2a';
+    ctx.fillStyle = enemy.isBoss ? '#2a1a3a' : '#3a5a2a';
     ctx.fillRect(0, H * 0.55, W, H * 0.45);
-    ctx.fillStyle = '#4a6a3a';
-    for (let i = 0; i < W; i += 20) {
-      ctx.fillRect(i, H * 0.55, 10, 3);
-    }
+    ctx.fillStyle = enemy.isBoss ? '#3a2a4a' : '#4a6a3a';
+    for (let i = 0; i < W; i += 20) { ctx.fillRect(i, H * 0.55, 10, 3); }
 
+    // 敵描画
     const ex = W / 2 + (flashEnemy ? (Math.random() - 0.5) * shakeAmount * 2 : 0);
     const ey = H * 0.35;
     if (!flashEnemy || Math.floor(animTimer * 10) % 2 === 0) {
       enemy.draw(ctx, ex, ey);
     }
 
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 14px sans-serif';
-    ctx.textAlign = 'center';
+    // 敵名とHP
+    ctx.fillStyle = enemy.isBoss ? '#e040ff' : '#fff';
+    ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center';
     ctx.fillText(enemy.name, W / 2, 30);
-    const barW = 150;
-    const hpRatio = enemyHp / enemy.hp;
-    ctx.fillStyle = '#333';
-    ctx.fillRect(W / 2 - barW / 2, 38, barW, 10);
+    const barW = 150, hpRatio = enemyHp / enemy.hp;
+    ctx.fillStyle = '#333'; ctx.fillRect(W / 2 - barW / 2, 38, barW, 10);
     ctx.fillStyle = hpRatio > 0.3 ? '#40c040' : '#e04040';
     ctx.fillRect(W / 2 - barW / 2, 38, barW * hpRatio, 10);
-    ctx.strokeStyle = '#888';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(W / 2 - barW / 2, 38, barW, 10);
+    ctx.strokeStyle = '#888'; ctx.lineWidth = 1; ctx.strokeRect(W / 2 - barW / 2, 38, barW, 10);
 
+    // プレイヤーステータス
     const sw = 200, sh = 70;
     const sx = W - sw - 15, sy = H * 0.55 + 10;
-    ctx.fillStyle = 'rgba(0,0,0,0.8)';
-    ctx.fillRect(sx, sy, sw, sh);
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(sx, sy, sw, sh);
-
-    ctx.fillStyle = '#fff';
-    ctx.font = '13px sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText(`Lv${level}  プレイヤー`, sx + 10, sy + 20);
-
+    ctx.fillStyle = 'rgba(0,0,0,0.8)'; ctx.fillRect(sx, sy, sw, sh);
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.strokeRect(sx, sy, sw, sh);
+    ctx.fillStyle = '#fff'; ctx.font = '13px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText(`Lv${level}  ミズキチ`, sx + 10, sy + 20);
     const phpRatio = playerHp / playerMaxHp;
-    ctx.fillText(`HP`, sx + 10, sy + 42);
-    ctx.fillStyle = '#333';
-    ctx.fillRect(sx + 35, sy + 33, 100, 10);
+    ctx.fillText('HP', sx + 10, sy + 42);
+    ctx.fillStyle = '#333'; ctx.fillRect(sx + 35, sy + 33, 100, 10);
     ctx.fillStyle = phpRatio > 0.3 ? '#40c040' : '#e04040';
     ctx.fillRect(sx + 35, sy + 33, 100 * phpRatio, 10);
-    ctx.fillStyle = '#fff';
-    ctx.fillText(`${playerHp}/${playerMaxHp}`, sx + 140, sy + 42);
-
+    ctx.fillStyle = '#fff'; ctx.fillText(`${playerHp}/${playerMaxHp}`, sx + 140, sy + 42);
     ctx.fillText(`EXP ${exp}/${level * 20}`, sx + 10, sy + 60);
 
     if (flashPlayer && Math.floor(animTimer * 10) % 2 === 0) {
-      ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
-      ctx.fillRect(sx, sy, sw, sh);
+      ctx.fillStyle = 'rgba(255, 0, 0, 0.3)'; ctx.fillRect(sx, sy, sw, sh);
     }
 
-    const mw = W - 30, mh = 70;
-    const mx = 15, my = H - mh - 10;
-    ctx.fillStyle = 'rgba(0,0,0,0.85)';
-    ctx.fillRect(mx, my, mw, mh);
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(mx, my, mw, mh);
+    // メッセージ
+    const mw = W - 30, mh = 70, mx = 15, my = H - mh - 10;
+    ctx.fillStyle = 'rgba(0,0,0,0.85)'; ctx.fillRect(mx, my, mw, mh);
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(mx, my, mw, mh);
+    ctx.fillStyle = '#fff'; ctx.font = '14px sans-serif'; ctx.textAlign = 'left';
+    message.split('\n').forEach((line, i) => { ctx.fillText(line, mx + 14, my + 24 + i * 20); });
 
-    ctx.fillStyle = '#fff';
-    ctx.font = '14px sans-serif';
-    ctx.textAlign = 'left';
-    const lines = message.split('\n');
-    lines.forEach((line, i) => {
-      ctx.fillText(line, mx + 14, my + 24 + i * 20);
-    });
-
+    // コマンド
     if (phase === 'select') {
-      const cw = 130, ch = 100;
-      const cx = 15, cy = H - mh - ch - 20;
-      ctx.fillStyle = 'rgba(0,0,0,0.85)';
-      ctx.fillRect(cx, cy, cw, ch);
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(cx, cy, cw, ch);
-
+      const cw = 130, ch = 100, ccx = 15, ccy = H - mh - ch - 20;
+      ctx.fillStyle = 'rgba(0,0,0,0.85)'; ctx.fillRect(ccx, ccy, cw, ch);
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(ccx, ccy, cw, ch);
       ctx.font = '14px sans-serif';
       COMMANDS.forEach((cmd, i) => {
         ctx.fillStyle = i === cursor ? '#f0d060' : '#fff';
-        ctx.fillText(`${i === cursor ? '▶' : '　'} ${cmd}`, cx + 12, cy + 28 + i * 28);
+        ctx.fillText(`${i === cursor ? '▶' : '　'} ${cmd}`, ccx + 12, ccy + 28 + i * 28);
       });
     }
 
     if (phase === 'result' && messageTimer > 2.0) {
-      ctx.fillStyle = '#aaa';
-      ctx.font = '11px sans-serif';
-      ctx.textAlign = 'center';
+      ctx.fillStyle = '#aaa'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText('スペースキーで戻る', W / 2, H - 5);
     }
   }
 
-  return { start, isActive, update, render, getPlayerStats, heal, getCurrentHp, getMaxHp };
+  return { start, startBoss, isActive, update, render, getPlayerStats, heal, getCurrentHp, getMaxHp };
 })();

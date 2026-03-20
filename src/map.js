@@ -1,20 +1,10 @@
 // マップシステム - タイルマップの定義と描画
 const GameMap = (() => {
-  // タイル種類
   const TILES = {
-    GRASS: 0,
-    WALL: 1,
-    WATER: 2,
-    PATH: 3,
-    DOOR: 4,
-    FLOOR: 5,
-    TREE: 6,
-    BONFIRE: 7,
-    CAVE_WALL: 8,
-    CAVE_FLOOR: 9,
+    GRASS: 0, WALL: 1, WATER: 2, PATH: 3, DOOR: 4,
+    FLOOR: 5, TREE: 6, BONFIRE: 7, CAVE_WALL: 8, CAVE_FLOOR: 9,
   };
 
-  // タイルの色
   const TILE_COLORS = {
     [TILES.GRASS]:      '#4a8c3f',
     [TILES.WALL]:       '#6b6b6b',
@@ -28,26 +18,24 @@ const GameMap = (() => {
     [TILES.CAVE_FLOOR]: '#4a4a5a',
   };
 
-  // 通行不可タイル
   const SOLID_TILES = new Set([TILES.WALL, TILES.WATER, TILES.TREE, TILES.CAVE_WALL]);
 
-  const W = 8; // CAVE_WALL shorthand
-  const F = 9; // CAVE_FLOOR shorthand
+  const W = 8, F = 9; // shorthand
 
-  // マップデータ
   const maps = {
     village: {
       width: 20,
       height: 15,
+      // 右建物: cols 14-18, rows 2-5, ドア(16,5)正面(南向き)
       data: [
         6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
         6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,
-        6,0,0,0,0,3,3,3,3,3,3,3,3,0,0,0,0,0,0,6,
-        6,0,0,1,1,1,1,3,0,0,0,0,3,0,0,0,0,0,0,6,
-        6,0,0,1,5,5,1,3,0,0,0,0,3,0,0,1,1,1,0,6,
-        6,0,0,1,5,5,4,3,0,0,0,0,3,0,0,1,5,1,0,6,
-        6,0,0,1,1,1,1,3,0,0,0,0,3,3,3,1,5,1,0,6,
-        6,0,0,0,0,0,0,3,0,0,0,0,0,0,3,1,1,4,3,3,
+        6,0,0,0,0,3,3,3,3,3,3,3,3,0,1,1,1,1,1,6,
+        6,0,0,1,1,1,1,3,0,0,0,0,3,0,1,5,5,5,1,6,
+        6,0,0,1,5,5,1,3,0,0,0,0,3,0,1,5,5,5,1,6,
+        6,0,0,1,5,5,4,3,0,0,0,0,3,0,1,1,4,1,1,6,
+        6,0,0,1,1,1,1,3,0,0,0,0,3,0,0,0,3,0,0,6,
+        6,0,0,0,0,0,0,3,0,0,0,0,0,0,3,3,3,3,3,3,
         6,0,0,0,0,0,0,3,3,3,0,0,0,0,3,0,0,0,0,6,
         6,0,2,2,0,0,0,0,0,3,0,0,0,0,3,0,0,0,0,6,
         6,0,2,2,0,0,0,0,0,3,3,3,3,3,3,0,0,0,0,6,
@@ -66,11 +54,12 @@ const GameMap = (() => {
             '気をつけて行くのじゃぞ！',
           ]
         },
-        { id: 'villager', x: 16, y: 5, name: '村人', color: '#60a0e0',
+        { id: 'villager', x: 16, y: 3, name: '村人', color: '#60a0e0',
           dialog: [
             'いい天気ですね！',
             '池の魚がよく釣れるんですよ。',
             '左下の焚き火で肉を焼けるらしいですよ。',
+            'Eキーでステータス、Cキーでクラフトですよ！',
           ]
         },
       ],
@@ -85,15 +74,15 @@ const GameMap = (() => {
         W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,
         W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,
         W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,
-        W,W,W,W,W,F,F,F,F,F,F,F,F,F,F,W,W,W,W,W,
-        W,W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,W,
-        W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,
-        F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,
-        F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,
-        F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,
-        W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,
-        W,W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,W,
-        W,W,W,W,W,F,F,F,F,F,F,F,F,F,F,W,W,W,W,W,
+        W,W,W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,
+        W,W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,
+        W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,
+        F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,
+        F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,
+        F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,
+        W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,
+        W,W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,
+        W,W,W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,
         W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,
         W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,
         W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,
@@ -104,6 +93,13 @@ const GameMap = (() => {
           dialog: [
             'キケン！この先に魔獣ムラコンがいます。',
             '強すぎるので引き返して下さい',
+          ]
+        },
+        { id: 'murakon', x: 16, y: 7, name: '魔獣ムラコン', type: 'boss', bossId: 'murakon', color: '#8020a0',
+          dialog: [
+            'グルルル......',
+            '愚かな人間め...この洞窟に足を踏み入れるとは！',
+            '我が牙の錆にしてくれる！',
           ]
         },
       ],
@@ -125,9 +121,7 @@ const GameMap = (() => {
     return currentMap;
   }
 
-  function getCurrentMapName() {
-    return currentMapName;
-  }
+  function getCurrentMapName() { return currentMapName; }
 
   function getTile(x, y) {
     if (!currentMap) return TILES.WALL;
@@ -135,9 +129,7 @@ const GameMap = (() => {
     return currentMap.data[y * currentMap.width + x];
   }
 
-  function isSolid(x, y) {
-    return SOLID_TILES.has(getTile(x, y));
-  }
+  function isSolid(x, y) { return SOLID_TILES.has(getTile(x, y)); }
 
   function getExit(x, y) {
     if (!currentMap || !currentMap.exits) return null;
@@ -155,96 +147,48 @@ const GameMap = (() => {
         ctx.fillStyle = TILE_COLORS[tile] || '#000';
         ctx.fillRect(x * ts, y * ts, ts, ts);
 
-        // タイルの装飾
         if (tile === TILES.GRASS) {
           ctx.fillStyle = '#5a9c4f';
           ctx.fillRect(x * ts + 8, y * ts + 6, 2, 6);
           ctx.fillRect(x * ts + 20, y * ts + 14, 2, 6);
         } else if (tile === TILES.TREE) {
-          ctx.fillStyle = '#5a3a1a';
-          ctx.fillRect(x * ts + 13, y * ts + 18, 6, 14);
-          ctx.fillStyle = '#1a5a1a';
-          ctx.beginPath();
-          ctx.arc(x * ts + 16, y * ts + 14, 12, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.fillStyle = '#5a3a1a'; ctx.fillRect(x * ts + 13, y * ts + 18, 6, 14);
+          ctx.fillStyle = '#1a5a1a'; ctx.beginPath(); ctx.arc(x * ts + 16, y * ts + 14, 12, 0, Math.PI * 2); ctx.fill();
         } else if (tile === TILES.WATER) {
           ctx.fillStyle = '#5a9eef';
           ctx.fillRect(x * ts + 4, y * ts + 10, 12, 2);
           ctx.fillRect(x * ts + 14, y * ts + 20, 10, 2);
         } else if (tile === TILES.WALL) {
-          ctx.strokeStyle = '#5a5a5a';
-          ctx.lineWidth = 1;
+          ctx.strokeStyle = '#5a5a5a'; ctx.lineWidth = 1;
           ctx.strokeRect(x * ts + 1, y * ts + 1, ts - 2, ts / 2 - 1);
         } else if (tile === TILES.DOOR) {
-          ctx.fillStyle = '#a07040';
-          ctx.fillRect(x * ts + 6, y * ts + 2, ts - 12, ts - 4);
-          ctx.fillStyle = '#d4a040';
-          ctx.beginPath();
-          ctx.arc(x * ts + ts - 10, y * ts + ts / 2, 3, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.fillStyle = '#a07040'; ctx.fillRect(x * ts + 6, y * ts + 2, ts - 12, ts - 4);
+          ctx.fillStyle = '#d4a040'; ctx.beginPath(); ctx.arc(x * ts + ts - 10, y * ts + ts / 2, 3, 0, Math.PI * 2); ctx.fill();
         } else if (tile === TILES.BONFIRE) {
-          // 石の囲い
-          ctx.fillStyle = '#777';
-          ctx.beginPath();
-          ctx.arc(x * ts + 16, y * ts + 20, 12, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = '#555';
-          ctx.beginPath();
-          ctx.arc(x * ts + 16, y * ts + 20, 9, 0, Math.PI * 2);
-          ctx.fill();
-          // 薪
-          ctx.fillStyle = '#6a4a2a';
-          ctx.fillRect(x * ts + 8, y * ts + 18, 16, 4);
-          ctx.fillRect(x * ts + 12, y * ts + 16, 4, 10);
-          // 炎（アニメーション）
-          const flicker1 = Math.sin(bonfireAnim * 3) * 2;
-          const flicker2 = Math.cos(bonfireAnim * 4) * 2;
-          ctx.fillStyle = '#ff4020';
-          ctx.beginPath();
-          ctx.ellipse(x * ts + 16, y * ts + 14 + flicker1, 6, 10, 0, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = '#ff8020';
-          ctx.beginPath();
-          ctx.ellipse(x * ts + 14 + flicker2, y * ts + 12 + flicker1, 4, 7, 0, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = '#ffe040';
-          ctx.beginPath();
-          ctx.ellipse(x * ts + 16, y * ts + 14 + flicker2, 3, 5, 0, 0, Math.PI * 2);
-          ctx.fill();
-          // ラベル
-          ctx.fillStyle = '#ffcc66';
-          ctx.font = '9px sans-serif';
-          ctx.textAlign = 'center';
+          ctx.fillStyle = '#777'; ctx.beginPath(); ctx.arc(x * ts + 16, y * ts + 20, 12, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#555'; ctx.beginPath(); ctx.arc(x * ts + 16, y * ts + 20, 9, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#6a4a2a'; ctx.fillRect(x * ts + 8, y * ts + 18, 16, 4); ctx.fillRect(x * ts + 12, y * ts + 16, 4, 10);
+          const f1 = Math.sin(bonfireAnim * 3) * 2, f2 = Math.cos(bonfireAnim * 4) * 2;
+          ctx.fillStyle = '#ff4020'; ctx.beginPath(); ctx.ellipse(x * ts + 16, y * ts + 14 + f1, 6, 10, 0, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#ff8020'; ctx.beginPath(); ctx.ellipse(x * ts + 14 + f2, y * ts + 12 + f1, 4, 7, 0, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#ffe040'; ctx.beginPath(); ctx.ellipse(x * ts + 16, y * ts + 14 + f2, 3, 5, 0, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#ffcc66'; ctx.font = '9px sans-serif'; ctx.textAlign = 'center';
           ctx.fillText('焚き火', x * ts + 16, y * ts - 2);
         } else if (tile === TILES.CAVE_WALL) {
-          // 洞窟の壁（暗い岩）
-          ctx.fillStyle = '#3a3a4a';
-          ctx.fillRect(x * ts + 2, y * ts + 2, ts - 4, ts - 4);
-          ctx.fillStyle = '#22222f';
-          ctx.fillRect(x * ts + 4, y * ts + 8, 8, 6);
-          ctx.fillRect(x * ts + 18, y * ts + 16, 6, 8);
+          ctx.fillStyle = '#3a3a4a'; ctx.fillRect(x * ts + 2, y * ts + 2, ts - 4, ts - 4);
+          ctx.fillStyle = '#22222f'; ctx.fillRect(x * ts + 4, y * ts + 8, 8, 6); ctx.fillRect(x * ts + 18, y * ts + 16, 6, 8);
         } else if (tile === TILES.CAVE_FLOOR) {
-          // 洞窟の地面（少し装飾）
-          ctx.fillStyle = '#555568';
-          ctx.fillRect(x * ts + 10, y * ts + 12, 3, 2);
-          ctx.fillRect(x * ts + 22, y * ts + 22, 2, 2);
+          ctx.fillStyle = '#555568'; ctx.fillRect(x * ts + 10, y * ts + 12, 3, 2); ctx.fillRect(x * ts + 22, y * ts + 22, 2, 2);
         }
       }
     }
 
-    // ダンジョンの場合、東側出口に矢印表示
     if (currentMapName === 'village') {
-      // 東の出口マーカー
-      ctx.fillStyle = '#ffe080';
-      ctx.font = '10px sans-serif';
-      ctx.textAlign = 'center';
+      ctx.fillStyle = '#ffe080'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText('→ダンジョン', 19 * ts + ts / 2, 7 * ts - 4);
     }
     if (currentMapName === 'dungeon') {
-      // 西の出口マーカー
-      ctx.fillStyle = '#80ffe0';
-      ctx.font = '10px sans-serif';
-      ctx.textAlign = 'center';
+      ctx.fillStyle = '#80ffe0'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText('←村へ戻る', 0 * ts + ts, 6 * ts - 4);
     }
   }
