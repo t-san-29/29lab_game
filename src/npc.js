@@ -22,7 +22,7 @@ const NPC = (() => {
 
   function showMonologue(lines) {
     activeDialog = {
-      npc: { name: 'ミズキチ' },
+      npc: { name: PlayerData.getName() },
       lines: lines,
       index: 0,
     };
@@ -115,7 +115,7 @@ const NPC = (() => {
     ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.strokeRect(10, boxY, W - 20, boxH);
     ctx.strokeStyle = '#aaa'; ctx.lineWidth = 1; ctx.strokeRect(14, boxY + 4, W - 28, boxH - 8);
 
-    const isProtag = activeDialog.npc.name === 'ミズキチ';
+    const isProtag = activeDialog.npc.name === PlayerData.getName();
     const isSign = activeDialog.npc.type === 'sign';
     const isBoss = activeDialog.npc.type === 'boss';
     ctx.fillStyle = isProtag ? '#80d0ff' : (isBoss ? '#e040ff' : (isSign ? '#ff8060' : '#f0d060'));

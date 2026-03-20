@@ -309,11 +309,11 @@ const Battle = (() => {
     if (cmd === 'たたかう') {
       const dmg = Math.max(1, playerAtk - enemy.def + Math.floor(Math.random() * 4) - 2);
       enemyHp = Math.max(0, enemyHp - dmg);
-      message = `ミズキチの こうげき！\n${enemy.name}に ${dmg} のダメージ！`;
+      message = `${PlayerData.getName()}の こうげき！\n${enemy.name}に ${dmg} のダメージ！`;
       phase = 'player_attack'; messageTimer = 0; flashEnemy = true; shakeAmount = 5;
     } else if (cmd === 'ぼうぎょ') {
       defending = true;
-      message = 'ミズキチは みをまもっている！';
+      message = `${PlayerData.getName()}は みをまもっている！`;
       phase = 'player_attack'; messageTimer = 0;
     } else if (cmd === 'にげる') {
       if (enemy.isBoss) {
@@ -334,7 +334,7 @@ const Battle = (() => {
     const dmg = Math.max(1, enemy.atk - defMod + Math.floor(Math.random() * 3) - 1);
     playerHp = Math.max(0, playerHp - dmg);
     currentHp = playerHp;
-    message = `${enemy.name}の こうげき！\nミズキチに ${dmg} のダメージ！`;
+    message = `${enemy.name}の こうげき！\n${PlayerData.getName()}に ${dmg} のダメージ！`;
     phase = 'enemy_attack'; messageTimer = 0; flashPlayer = true; shakeAmount = 3;
   }
 
@@ -362,7 +362,7 @@ const Battle = (() => {
 
   function onLose() {
     currentHp = Math.floor(getMaxHp() / 2);
-    message = 'ミズキチは たおれてしまった...\nきぜつから もどった。（HPが半分で回復）';
+    message = `${PlayerData.getName()}は たおれてしまった...\nきぜつから もどった。（HPが半分で回復）`;
     phase = 'result'; resultType = 'lose'; messageTimer = 0;
   }
 
@@ -402,7 +402,7 @@ const Battle = (() => {
     ctx.fillStyle = 'rgba(0,0,0,0.8)'; ctx.fillRect(sx, sy, sw, sh);
     ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.strokeRect(sx, sy, sw, sh);
     ctx.fillStyle = '#fff'; ctx.font = '13px sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText(`Lv${level}  ミズキチ`, sx + 10, sy + 20);
+    ctx.fillText(`Lv${level}  ${PlayerData.getName()}`, sx + 10, sy + 20);
     const phpRatio = playerHp / playerMaxHp;
     ctx.fillText('HP', sx + 10, sy + 42);
     ctx.fillStyle = '#333'; ctx.fillRect(sx + 35, sy + 33, 100, 10);

@@ -110,7 +110,7 @@ const StatusScreen = (() => {
     ctx.textAlign = 'left';
 
     ctx.fillStyle = '#80d0ff';
-    ctx.fillText('ミズキチ', leftX, sy);
+    ctx.fillText(PlayerData.getName(), leftX, sy);
     sy += 26;
 
     ctx.fillStyle = '#fff';
