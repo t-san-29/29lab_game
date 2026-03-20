@@ -9,24 +9,28 @@
   // NPC初期化
   NPC.init(map.npcs);
 
+  // ゲーム開始時のモノローグ
+  NPC.showMonologue([
+    'ここは...どこだろう？',
+    '知らない村に来てしまったみたいだ。',
+    'まずは村人に話しかけてみよう。',
+  ]);
+
   // ランダムエンカウント
   let stepCount = 0;
   let lastPlayerX = map.playerStart.x;
   let lastPlayerY = map.playerStart.y;
-  const ENCOUNTER_CHANCE = 0.12; // 草地を歩くとき12%の確率
+  const ENCOUNTER_CHANCE = 0.12;
 
   function checkEncounter() {
-    // 移動したかチェック
     if (Player.x === lastPlayerX && Player.y === lastPlayerY) return;
     lastPlayerX = Player.x;
     lastPlayerY = Player.y;
 
-    // 草地の上でのみエンカウント
     const tile = GameMap.getTile(Player.x, Player.y);
     if (tile !== GameMap.TILES.GRASS) return;
 
     stepCount++;
-    // 最初の5歩はエンカウントしない（猶予）
     if (stepCount <= 5) return;
 
     if (Math.random() < ENCOUNTER_CHANCE) {
@@ -35,11 +39,28 @@
     }
   }
 
+  // 焚き火インタラクション
+  function checkBonfire() {
+    if (Engine.isKeyJustPressed(' ') || Engine.isKeyJustPressed('Enter')) {
+      const facing = Player.getFacing();
+      const tile = GameMap.getTile(facing.x, facing.y);
+      if (tile === GameMap.TILES.BONFIRE) {
+        Cooking.open();
+      }
+    }
+  }
+
   // 更新処理
   function update(dt) {
     // バトル中
     if (Battle.isActive()) {
       Battle.update(dt);
+      return;
+    }
+
+    // 料理中
+    if (Cooking.isActive()) {
+      Cooking.update();
       return;
     }
 
@@ -58,6 +79,7 @@
     Inventory.update();
     Player.update(dt);
     NPC.update();
+    checkBonfire();
     checkEncounter();
   }
 
@@ -83,6 +105,9 @@
 
     // インベントリ
     Inventory.render(ctx);
+
+    // 料理画面
+    Cooking.render(ctx);
 
     // ステータス表示
     const stats = Battle.getPlayerStats();

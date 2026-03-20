@@ -11,6 +11,23 @@ const Inventory = (() => {
     }
   }
 
+  function remove(id, amount) {
+    if (!items[id]) return false;
+    items[id].count -= amount;
+    if (items[id].count <= 0) {
+      delete items[id];
+    }
+    return true;
+  }
+
+  function hasItem(id) {
+    return !!items[id] && items[id].count > 0;
+  }
+
+  function getItem(id) {
+    return items[id] || null;
+  }
+
   function getAll() {
     return Object.values(items);
   }
@@ -83,5 +100,5 @@ const Inventory = (() => {
     ctx.fillText('Iキーで閉じる', W / 2, H - pad - 10);
   }
 
-  return { add, getAll, isOpen, close, update, render };
+  return { add, remove, hasItem, getItem, getAll, isOpen, close, update, render };
 })();

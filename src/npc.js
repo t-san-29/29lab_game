@@ -1,4 +1,4 @@
-// NPC・会話システム
+// NPC・会話・モノローグシステム
 const NPC = (() => {
   let npcs = [];
   let activeDialog = null;  // { npc, lines, index }
@@ -13,6 +13,15 @@ const NPC = (() => {
 
   function isDialogActive() {
     return activeDialog !== null;
+  }
+
+  // モノローグ（主人公の独り言）を表示
+  function showMonologue(lines) {
+    activeDialog = {
+      npc: { name: '主人公' },
+      lines: lines,
+      index: 0,
+    };
   }
 
   function update() {
@@ -79,8 +88,9 @@ const NPC = (() => {
     ctx.lineWidth = 2;
     ctx.strokeRect(10, boxY, W - 20, boxH);
 
-    // 名前
-    ctx.fillStyle = '#f0d060';
+    // 名前（主人公は水色）
+    const isProtag = activeDialog.npc.name === '主人公';
+    ctx.fillStyle = isProtag ? '#80d0ff' : '#f0d060';
     ctx.font = 'bold 14px sans-serif';
     ctx.textAlign = 'left';
     ctx.fillText(activeDialog.npc.name, 24, boxY + 22);
@@ -100,5 +110,5 @@ const NPC = (() => {
     ctx.fillText(hint, W - 24, boxY + boxH - 12);
   }
 
-  return { init, getAt, isDialogActive, update, renderNPCs, renderDialog };
+  return { init, getAt, isDialogActive, showMonologue, update, renderNPCs, renderDialog };
 })();

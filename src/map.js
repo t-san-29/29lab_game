@@ -9,17 +9,19 @@ const GameMap = (() => {
     DOOR: 4,
     FLOOR: 5,
     TREE: 6,
+    BONFIRE: 7,
   };
 
   // タイルの色
   const TILE_COLORS = {
-    [TILES.GRASS]: '#4a8c3f',
-    [TILES.WALL]:  '#6b6b6b',
-    [TILES.WATER]: '#3a7ecf',
-    [TILES.PATH]:  '#c4a35a',
-    [TILES.DOOR]:  '#8b5e3c',
-    [TILES.FLOOR]: '#b0a080',
-    [TILES.TREE]:  '#2d6b2d',
+    [TILES.GRASS]:   '#4a8c3f',
+    [TILES.WALL]:    '#6b6b6b',
+    [TILES.WATER]:   '#3a7ecf',
+    [TILES.PATH]:    '#c4a35a',
+    [TILES.DOOR]:    '#8b5e3c',
+    [TILES.FLOOR]:   '#b0a080',
+    [TILES.TREE]:    '#2d6b2d',
+    [TILES.BONFIRE]: '#4a8c3f',
   };
 
   // 通行不可タイル
@@ -37,13 +39,13 @@ const GameMap = (() => {
         6,0,0,1,1,1,1,3,0,0,0,0,3,0,0,0,0,0,0,6,
         6,0,0,1,5,5,1,3,0,0,0,0,3,0,0,1,1,1,0,6,
         6,0,0,1,5,5,4,3,0,0,0,0,3,0,0,1,5,1,0,6,
-        6,0,0,1,1,1,1,3,0,0,0,0,3,3,3,1,4,1,0,6,
-        6,0,0,0,0,0,0,3,0,0,0,0,0,0,3,1,1,1,0,6,
-        6,0,0,0,0,0,0,3,3,3,0,0,0,0,3,0,0,0,0,6,
+        6,0,0,1,1,1,1,3,0,0,0,0,3,3,3,1,5,1,0,6,
+        6,0,0,0,0,0,0,3,0,0,0,0,0,0,3,1,4,1,0,6,
+        6,0,0,0,0,0,0,3,3,3,0,0,0,0,3,1,1,1,0,6,
         6,0,2,2,0,0,0,0,0,3,0,0,0,0,3,0,0,0,0,6,
         6,0,2,2,0,0,0,0,0,3,3,3,3,3,3,0,0,0,0,6,
         6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,
-        6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,
+        6,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,
         6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,
         6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
       ],
@@ -61,6 +63,7 @@ const GameMap = (() => {
           dialog: [
             'いい天気ですね！',
             '池の魚がよく釣れるんですよ。',
+            '左下の焚き火で肉を焼けるらしいですよ。',
           ]
         },
       ],
@@ -68,6 +71,7 @@ const GameMap = (() => {
   };
 
   let currentMap = null;
+  let bonfireAnim = 0;
 
   function load(mapName) {
     currentMap = maps[mapName];
@@ -87,6 +91,8 @@ const GameMap = (() => {
   function render(ctx) {
     if (!currentMap) return;
     const ts = Engine.TILE_SIZE;
+    bonfireAnim += 0.05;
+
     for (let y = 0; y < currentMap.height; y++) {
       for (let x = 0; x < currentMap.width; x++) {
         const tile = getTile(x, y);
@@ -120,6 +126,40 @@ const GameMap = (() => {
           ctx.beginPath();
           ctx.arc(x * ts + ts - 10, y * ts + ts / 2, 3, 0, Math.PI * 2);
           ctx.fill();
+        } else if (tile === TILES.BONFIRE) {
+          // 石の囲い
+          ctx.fillStyle = '#777';
+          ctx.beginPath();
+          ctx.arc(x * ts + 16, y * ts + 20, 12, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#555';
+          ctx.beginPath();
+          ctx.arc(x * ts + 16, y * ts + 20, 9, 0, Math.PI * 2);
+          ctx.fill();
+          // 薪
+          ctx.fillStyle = '#6a4a2a';
+          ctx.fillRect(x * ts + 8, y * ts + 18, 16, 4);
+          ctx.fillRect(x * ts + 12, y * ts + 16, 4, 10);
+          // 炎（アニメーション）
+          const flicker1 = Math.sin(bonfireAnim * 3) * 2;
+          const flicker2 = Math.cos(bonfireAnim * 4) * 2;
+          ctx.fillStyle = '#ff4020';
+          ctx.beginPath();
+          ctx.ellipse(x * ts + 16, y * ts + 14 + flicker1, 6, 10, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#ff8020';
+          ctx.beginPath();
+          ctx.ellipse(x * ts + 14 + flicker2, y * ts + 12 + flicker1, 4, 7, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#ffe040';
+          ctx.beginPath();
+          ctx.ellipse(x * ts + 16, y * ts + 14 + flicker2, 3, 5, 0, 0, Math.PI * 2);
+          ctx.fill();
+          // ラベル
+          ctx.fillStyle = '#ffcc66';
+          ctx.font = '9px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('焚き火', x * ts + 16, y * ts - 2);
         }
       }
     }
