@@ -6,9 +6,13 @@
     'ミズキチ・イェーガー',
     'ヒータン・ミータン',
   ];
-  let gamePhase = 'name_select'; // name_select → playing
+  let gamePhase = 'name_select'; // name_select → playing → ending
   let nameCursor = 0;
   let nameDialogPhase = 'ask'; // ask → select → confirm
+  let endingPhase = 0; // 0=wake, 1=room, 2=mom_voice
+  let endingTimer = 0;
+  let wasBattleActive = false; // バトル終了検知用
+  let wasBossBattle = false; // ボス戦かどうか
 
   // === ゲーム本体の初期化（名前決定後に呼ぶ） ===
   let map, stepCount, lastPlayerX, lastPlayerY;
@@ -71,8 +75,35 @@
   function checkBossTrigger() {
     const bossNpc = NPC.consumeCompletedBoss();
     if (bossNpc && bossNpc.bossId) {
-      NPC.removeNpc(bossNpc.id);
+      // ムラコンは消さない（再戦可能）
       Battle.startBoss(bossNpc.bossId);
+      wasBossBattle = true;
+    }
+  }
+
+  // バトル終了後の処理
+  function checkBattleEnd() {
+    if (wasBattleActive && !Battle.isActive()) {
+      wasBattleActive = false;
+      const result = Battle.getLastResult();
+      if (result === 'lose') {
+        // 敗北 → 村の開始位置にリスポーン
+        const villageMap = GameMap.load('village');
+        changeMap('village', villageMap.playerStart.x, villageMap.playerStart.y);
+        NPC.showMonologue([
+          '...はっ！ 気がつくと村に戻っていた。',
+          'まだ体が痛む...でも、あきらめないぞ。',
+        ]);
+        wasBossBattle = false;
+      } else if (result === 'win' && wasBossBattle) {
+        // ボス勝利 → エンディング
+        wasBossBattle = false;
+        gamePhase = 'ending';
+        endingPhase = 0;
+        endingTimer = 0;
+      } else {
+        wasBossBattle = false;
+      }
     }
   }
 
@@ -84,7 +115,21 @@
       return;
     }
 
-    if (Battle.isActive()) { Battle.update(dt); return; }
+    // エンディングフェーズ
+    if (gamePhase === 'ending') {
+      updateEnding(dt);
+      return;
+    }
+
+    if (Battle.isActive()) {
+      wasBattleActive = true;
+      Battle.update(dt);
+      return;
+    }
+
+    // バトル終了チェック（リスポーン or エンディング）
+    checkBattleEnd();
+
     if (Cooking.isActive()) { Cooking.update(); return; }
     if (StatusScreen.isOpen()) { StatusScreen.update(); return; }
     if (Crafting.isOpen()) { Crafting.update(); return; }
@@ -104,6 +149,26 @@
     checkBonfire();
     checkExit();
     checkEncounter();
+  }
+
+  // エンディング更新
+  function updateEnding(dt) {
+    endingTimer += dt;
+    if (endingPhase === 0 && endingTimer > 3.0) {
+      // 画面暗転後 → 子供部屋へ
+      endingPhase = 1;
+      endingTimer = 0;
+    } else if (endingPhase === 1 && endingTimer > 3.0) {
+      // 部屋表示後 → お母さんの声
+      endingPhase = 2;
+      endingTimer = 0;
+    } else if (endingPhase === 2) {
+      // お母さんの声表示中 → キー入力で終了メッセージ
+      if (endingTimer > 2.0 && (Engine.isKeyJustPressed(' ') || Engine.isKeyJustPressed('Enter'))) {
+        endingPhase = 3;
+        endingTimer = 0;
+      }
+    }
   }
 
   // 名前選択の更新
@@ -139,6 +204,12 @@
       return;
     }
 
+    // エンディング画面
+    if (gamePhase === 'ending') {
+      renderEnding(ctx);
+      return;
+    }
+
     if (Battle.isActive()) { Battle.render(ctx); return; }
 
     GameMap.render(ctx);
@@ -165,6 +236,134 @@
     ctx.font = '10px sans-serif';
     ctx.textAlign = 'right';
     ctx.fillText('移動:矢印  話す:Space  I:持物  E:装備  C:クラフト', Engine.WIDTH - 8, 15);
+  }
+
+  // エンディング描画
+  function renderEnding(ctx) {
+    const W = Engine.WIDTH, H = Engine.HEIGHT;
+
+    if (endingPhase === 0) {
+      // フェーズ0: 暗転 + 目覚めテキスト
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, W, H);
+      const alpha = Math.min(1, endingTimer / 1.5);
+      ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+      ctx.font = '16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('...........', W / 2, H / 2 - 20);
+      if (endingTimer > 1.5) {
+        ctx.fillText('......あれ？', W / 2, H / 2 + 10);
+      }
+    } else if (endingPhase === 1) {
+      // フェーズ1: 子供部屋描画
+      drawChildRoom(ctx, W, H);
+      const alpha = Math.min(1, endingTimer / 1.0);
+      ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+      ctx.font = '16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${PlayerData.getName()}は 目をさました。`, W / 2, H - 80);
+      ctx.font = '13px sans-serif';
+      ctx.fillText('ここは...自分の部屋だ。 全部、夢だったのか...？', W / 2, H - 55);
+    } else if (endingPhase === 2) {
+      // フェーズ2: お母さんの声
+      drawChildRoom(ctx, W, H);
+      // メッセージウィンドウ
+      const boxW = W - 40, boxH = 100;
+      const boxX = 20, boxY = H - boxH - 20;
+      ctx.fillStyle = 'rgba(0, 0, 40, 0.92)';
+      ctx.fillRect(boxX, boxY, boxW, boxH);
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+      ctx.strokeRect(boxX, boxY, boxW, boxH);
+
+      ctx.fillStyle = '#f0d060';
+      ctx.font = 'bold 13px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('1階から声が聞こえる。', boxX + 14, boxY + 24);
+
+      ctx.fillStyle = '#fff';
+      ctx.font = '13px sans-serif';
+      const momLine = `ほらほら！${PlayerData.getName()}！`;
+      ctx.fillText(momLine, boxX + 14, boxY + 50);
+      ctx.fillText('ゲームやテレビもいいけど、ほかにも好きなこと', boxX + 14, boxY + 70);
+      ctx.fillText('たくさん見つけてたくさん遊ぶんですよ', boxX + 14, boxY + 88);
+
+      if (endingTimer > 2.0) {
+        ctx.fillStyle = '#aaa'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('▼ スペースキー', W / 2, boxY - 5);
+      }
+    } else if (endingPhase === 3) {
+      // フェーズ3: エンドクレジット
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#f0d060';
+      ctx.font = 'bold 28px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Fin.', W / 2, H / 2 - 30);
+      ctx.fillStyle = '#fff';
+      ctx.font = '14px sans-serif';
+      ctx.fillText('29Lab RPG  〜 はじまりの村 〜', W / 2, H / 2 + 10);
+      ctx.fillStyle = '#aaa';
+      ctx.font = '12px sans-serif';
+      ctx.fillText('ありがとうございました！', W / 2, H / 2 + 40);
+    }
+  }
+
+  // 子供部屋の描画
+  function drawChildRoom(ctx, W, H) {
+    // 壁
+    ctx.fillStyle = '#f5e8d0';
+    ctx.fillRect(0, 0, W, H);
+    // 床
+    ctx.fillStyle = '#c8a870';
+    ctx.fillRect(0, H * 0.6, W, H * 0.4);
+    // フローリング線
+    ctx.strokeStyle = '#b89860';
+    ctx.lineWidth = 1;
+    for (let y = H * 0.6; y < H; y += 20) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+    for (let x = 0; x < W; x += 60) {
+      ctx.beginPath(); ctx.moveTo(x, H * 0.6); ctx.lineTo(x, H); ctx.stroke();
+    }
+    // 窓（朝の光）
+    ctx.fillStyle = '#88ccff';
+    ctx.fillRect(W * 0.6, 30, 120, 100);
+    ctx.strokeStyle = '#a09080'; ctx.lineWidth = 4;
+    ctx.strokeRect(W * 0.6, 30, 120, 100);
+    ctx.beginPath(); ctx.moveTo(W * 0.6 + 60, 30); ctx.lineTo(W * 0.6 + 60, 130); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(W * 0.6, 80); ctx.lineTo(W * 0.6 + 120, 80); ctx.stroke();
+    // カーテン
+    ctx.fillStyle = '#ff9966';
+    ctx.fillRect(W * 0.6 - 10, 25, 15, 110);
+    ctx.fillRect(W * 0.6 + 115, 25, 15, 110);
+    // ベッド
+    ctx.fillStyle = '#8060a0';
+    ctx.fillRect(60, H * 0.45, 180, 90);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(65, H * 0.45 + 5, 50, 40);
+    // 布団
+    ctx.fillStyle = '#a080c0';
+    ctx.fillRect(60, H * 0.45 + 30, 180, 60);
+    // テレビ台
+    ctx.fillStyle = '#6a5040';
+    ctx.fillRect(W * 0.7, H * 0.5, 100, 60);
+    // テレビ
+    ctx.fillStyle = '#222';
+    ctx.fillRect(W * 0.7 + 10, H * 0.5 - 50, 80, 55);
+    ctx.fillStyle = '#335';
+    ctx.fillRect(W * 0.7 + 14, H * 0.5 - 46, 72, 47);
+    // ゲーム機
+    ctx.fillStyle = '#444';
+    ctx.fillRect(W * 0.7 + 25, H * 0.5 + 5, 50, 10);
+    // 本棚
+    ctx.fillStyle = '#8b7050';
+    ctx.fillRect(10, 30, 60, 120);
+    ctx.fillStyle = '#c04040'; ctx.fillRect(15, 38, 12, 20);
+    ctx.fillStyle = '#4080c0'; ctx.fillRect(30, 38, 10, 20);
+    ctx.fillStyle = '#40a040'; ctx.fillRect(43, 38, 12, 20);
+    ctx.fillStyle = '#e0c040'; ctx.fillRect(15, 65, 15, 20);
+    ctx.fillStyle = '#a060a0'; ctx.fillRect(33, 65, 12, 20);
+    ctx.fillStyle = '#e08040'; ctx.fillRect(48, 65, 10, 20);
   }
 
   // 名前選択画面の描画

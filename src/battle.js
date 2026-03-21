@@ -43,7 +43,7 @@ const Battle = (() => {
   const BOSSES = {
     murakon: {
       id: 'murakon', name: '魔獣ムラコン',
-      hp: 200, atk: 15, def: 8, exp: 100,
+      hp: 80, atk: 12, def: 5, exp: 100,
       meat: { id: 'murakon_fang', name: 'ムラコンの牙', desc: '魔力を帯びた牙' },
       material: { id: 'murakon_scale', name: 'ムラコンの鱗', desc: '禍々しい鱗', dropRate: 1.0 },
       color: '#8020a0', draw: drawMurakon, isBoss: true,
@@ -440,5 +440,7 @@ const Battle = (() => {
     }
   }
 
-  return { start, startBoss, isActive, update, render, getPlayerStats, heal, getCurrentHp, getMaxHp };
+  function getLastResult() { return resultType; }
+
+  return { start, startBoss, isActive, update, render, getPlayerStats, heal, getCurrentHp, getMaxHp, getLastResult };
 })();
