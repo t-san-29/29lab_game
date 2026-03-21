@@ -14,6 +14,8 @@
   let titleTimer = 0; // タイトル画面アニメ用
   let wasBattleActive = false; // バトル終了検知用
   let wasBossBattle = false; // ボス戦かどうか
+  let bgmStarted = false; // BGM開始済み
+  let currentBgmScene = ''; // 現在のBGMシーン
 
   // === ゲーム本体の初期化（名前決定後に呼ぶ） ===
   let map, stepCount, lastPlayerX, lastPlayerY;
@@ -34,6 +36,8 @@
     ]);
 
     gamePhase = 'playing';
+    BGM.playTrack('village');
+    currentBgmScene = 'village';
   }
 
   // マップ遷移
@@ -44,6 +48,12 @@
     stepCount = 0;
     lastPlayerX = targetX;
     lastPlayerY = targetY;
+    // マップに応じたBGM切り替え
+    const bgm = mapName === 'village' ? 'village' : 'dungeon';
+    if (currentBgmScene !== bgm) {
+      BGM.playTrack(bgm);
+      currentBgmScene = bgm;
+    }
   }
 
   function checkEncounter() {
@@ -57,6 +67,7 @@
     if (Math.random() < ENCOUNTER_CHANCE) {
       stepCount = 0;
       Battle.start();
+      BGM.playTrack('battle');
     }
   }
 
@@ -78,6 +89,7 @@
     if (bossNpc && bossNpc.bossId) {
       // ムラコンは消さない（再戦可能）
       Battle.startBoss(bossNpc.bossId);
+      BGM.playTrack('boss');
       wasBossBattle = true;
     }
   }
@@ -102,8 +114,11 @@
         gamePhase = 'ending';
         endingPhase = 0;
         endingTimer = 0;
+        BGM.playTrack('ending');
       } else {
         wasBossBattle = false;
+        // 通常勝利/逃走 → マップBGMに戻す
+        BGM.playTrack(currentBgmScene);
       }
     }
   }
@@ -113,7 +128,14 @@
     // タイトル画面
     if (gamePhase === 'title') {
       titleTimer += dt;
+      // 最初のタッチ/キー入力でAudioContext解除＆BGM開始
+      if (titleTimer > 0.3 && !bgmStarted) {
+        // タイトルBGMは操作なしでは鳴らない（ブラウザ制限）
+      }
       if (Engine.isKeyJustPressed(' ') || Engine.isKeyJustPressed('Enter')) {
+        BGM.unlock();
+        BGM.playTrack('title');
+        bgmStarted = true;
         gamePhase = 'name_select';
       }
       return;
@@ -317,7 +339,7 @@
       ctx.fillText('Fin.', W / 2, H / 2 - 30);
       ctx.fillStyle = '#fff';
       ctx.font = '14px sans-serif';
-      ctx.fillText('29lab.クエスト  〜 はじまりの村 〜', W / 2, H / 2 + 10);
+      ctx.fillText('ミズキチの冒険  〜 はじまりの村 〜', W / 2, H / 2 + 10);
       ctx.fillStyle = '#aaa';
       ctx.font = '12px sans-serif';
       ctx.fillText('ありがとうございました！', W / 2, H / 2 + 40);
@@ -439,7 +461,7 @@
     ctx.fillStyle = '#000';
     ctx.font = 'bold 42px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('29lab.クエスト', W / 2 + 3, titleY + 3);
+    ctx.fillText('ミズキチの冒険', W / 2 + 3, titleY + 3);
 
     // タイトル本体（金色グラデ風）
     const titleGrad = ctx.createLinearGradient(W / 2 - 150, titleY - 40, W / 2 + 150, titleY);
@@ -450,12 +472,12 @@
     titleGrad.addColorStop(1, '#c0a030');
     ctx.fillStyle = titleGrad;
     ctx.font = 'bold 42px sans-serif';
-    ctx.fillText('29lab.クエスト', W / 2, titleY);
+    ctx.fillText('ミズキチの冒険', W / 2, titleY);
 
     // タイトル外枠光
     ctx.strokeStyle = `rgba(255, 240, 160, ${0.4 + Math.sin(t * 1.5) * 0.3})`;
     ctx.lineWidth = 2;
-    ctx.strokeText('29lab.クエスト', W / 2, titleY);
+    ctx.strokeText('ミズキチの冒険', W / 2, titleY);
 
     // サブタイトル
     const subAlpha = Math.min(1, Math.max(0, (t - 1.0) / 1.0));
@@ -544,7 +566,7 @@
     ctx.fillStyle = '#f0d060';
     ctx.font = 'bold 24px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('29Lab RPG', W / 2, 60);
+    ctx.fillText('ミズキチの冒険', W / 2, 60);
     ctx.fillStyle = '#c0a040';
     ctx.font = '12px sans-serif';
     ctx.fillText('〜 はじまりの村 〜', W / 2, 85);
