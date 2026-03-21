@@ -2,30 +2,154 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>29Lab RPG</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>29lab.クエスト</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: #1a1a2e;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
+      justify-content: center;
       height: 100vh;
+      height: 100dvh;
       overflow: hidden;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
     }
     canvas {
       border: 2px solid #444;
       image-rendering: pixelated;
+      max-width: 100vw;
+      max-height: 60vh;
+      max-height: 60dvh;
     }
-    #ui-layer {
-      position: absolute;
-      pointer-events: none;
+
+    /* モバイルコントロール - PC では非表示 */
+    #mobile-controls {
+      display: none;
+      width: 100%;
+      max-width: 640px;
+      padding: 8px 12px 12px;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    /* 方向パッド */
+    .dpad {
+      display: grid;
+      grid-template-columns: 48px 48px 48px;
+      grid-template-rows: 48px 48px 48px;
+      gap: 3px;
+    }
+    .dpad-btn {
+      width: 48px; height: 48px;
+      background: rgba(255,255,255,0.12);
+      border: 2px solid rgba(255,255,255,0.25);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .dpad-btn:active { background: rgba(255,255,255,0.3); }
+    .dpad-center { background: none; border: none; }
+
+    /* 右側ボタン群 */
+    .action-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: flex-end;
+    }
+    .action-row {
+      display: flex;
+      gap: 6px;
+    }
+    .action-btn {
+      min-width: 52px; height: 44px;
+      padding: 0 10px;
+      background: rgba(255,255,255,0.12);
+      border: 2px solid rgba(255,255,255,0.25);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .action-btn:active { background: rgba(255,255,255,0.3); }
+    .action-btn.primary {
+      width: 68px; height: 68px;
+      border-radius: 50%;
+      font-size: 14px;
+      background: rgba(240,208,96,0.2);
+      border-color: rgba(240,208,96,0.5);
+      color: #f0d060;
+    }
+    .action-btn.primary:active { background: rgba(240,208,96,0.45); }
+    .action-btn.cancel {
+      background: rgba(255,80,80,0.15);
+      border-color: rgba(255,80,80,0.35);
+      color: #ff8080;
+    }
+    .action-btn.cancel:active { background: rgba(255,80,80,0.35); }
+
+    /* タッチデバイスでコントロール表示 */
+    @media (pointer: coarse) {
+      #mobile-controls { display: flex; }
+      canvas { max-height: 55vh; max-height: 55dvh; }
+    }
+    /* 小さい画面向け微調整 */
+    @media (max-height: 500px) and (pointer: coarse) {
+      .dpad-btn { width: 38px; height: 38px; font-size: 16px; }
+      .dpad { grid-template-columns: 38px 38px 38px; grid-template-rows: 38px 38px 38px; gap: 2px; }
+      .action-btn { min-width: 44px; height: 36px; font-size: 11px; }
+      .action-btn.primary { width: 54px; height: 54px; font-size: 12px; }
+      #mobile-controls { padding: 4px 8px 6px; }
     }
   </style>
 </head>
 <body>
   <canvas id="game"></canvas>
+
+  <!-- モバイル用コントロール -->
+  <div id="mobile-controls">
+    <!-- 方向パッド -->
+    <div class="dpad">
+      <div class="dpad-center"></div>
+      <button class="dpad-btn" data-key="ArrowUp">&#9650;</button>
+      <div class="dpad-center"></div>
+      <button class="dpad-btn" data-key="ArrowLeft">&#9664;</button>
+      <div class="dpad-center"></div>
+      <button class="dpad-btn" data-key="ArrowRight">&#9654;</button>
+      <div class="dpad-center"></div>
+      <button class="dpad-btn" data-key="ArrowDown">&#9660;</button>
+      <div class="dpad-center"></div>
+    </div>
+
+    <!-- 右側：機能ボタン＋決定/キャンセル -->
+    <div class="action-btns">
+      <div class="action-row">
+        <button class="action-btn" data-key="i">道具</button>
+        <button class="action-btn" data-key="e">装備</button>
+        <button class="action-btn" data-key="c">作る</button>
+      </div>
+      <div class="action-row">
+        <button class="action-btn cancel" data-key="Escape">戻る</button>
+        <button class="action-btn primary" data-key=" ">決定</button>
+      </div>
+    </div>
+  </div>
+
   <script src="src/engine.js"></script>
   <script src="src/playerdata.js"></script>
   <script src="src/map.js"></script>
@@ -38,5 +162,40 @@
   <script src="src/crafting.js"></script>
   <script src="src/status.js"></script>
   <script src="src/main.js"></script>
+
+  <!-- モバイルボタンのイベント設定 -->
+  <script>
+  (() => {
+    const btns = document.querySelectorAll('[data-key]');
+    btns.forEach(btn => {
+      const key = btn.dataset.key;
+      // 方向キーは押しっぱなし対応
+      const isDir = key.startsWith('Arrow');
+      let holdInterval = null;
+
+      btn.addEventListener('touchstart', e => {
+        e.preventDefault();
+        Engine.simulateKey(key);
+        if (isDir) {
+          holdInterval = setInterval(() => Engine.simulateKey(key), 150);
+        }
+      }, { passive: false });
+
+      btn.addEventListener('touchend', e => {
+        e.preventDefault();
+        if (holdInterval) { clearInterval(holdInterval); holdInterval = null; }
+      }, { passive: false });
+
+      btn.addEventListener('touchcancel', e => {
+        if (holdInterval) { clearInterval(holdInterval); holdInterval = null; }
+      });
+
+      // PC でも click 対応
+      btn.addEventListener('mousedown', e => {
+        Engine.simulateKey(key);
+      });
+    });
+  })();
+  </script>
 </body>
 </html>
