@@ -46,6 +46,8 @@
     map = GameMap.load(mapName);
     Player.init(targetX, targetY);
     NPC.init(map.npcs);
+    // 入手済みの聖剣NPCを除去
+    if (holySwordObtained) NPC.removeNpc('holy_sword');
     stepCount = 0;
     lastPlayerX = targetX;
     lastPlayerY = targetY;

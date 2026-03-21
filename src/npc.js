@@ -35,7 +35,6 @@ const NPC = (() => {
       lastCompletedNpc = null;
       return npc;
     }
-    lastCompletedNpc = null;
     return null;
   }
 
