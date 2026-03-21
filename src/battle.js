@@ -4,35 +4,35 @@ const Battle = (() => {
   const ENEMIES = [
     {
       id: 'slime_rabbit', name: 'スライムうさぎ',
-      hp: 8, atk: 3, def: 1, exp: 5,
+      hp: 8, atk: 3, def: 1, exp: 8,
       meat: { id: 'rabbit_meat', name: 'うさぎ肉', desc: 'やわらかくておいしい', healAmount: 5 },
       material: { id: 'rabbit_fur', name: 'うさぎの毛皮', desc: '柔らかい毛皮', dropRate: 0.6 },
       color: '#e8a0c8', draw: drawRabbit,
     },
     {
       id: 'wild_boar', name: 'イノシシ',
-      hp: 17, atk: 6, def: 3, exp: 12,
+      hp: 17, atk: 6, def: 3, exp: 18,
       meat: { id: 'boar_meat', name: 'イノシシ肉', desc: 'ジビエの王様', healAmount: 5 },
       material: { id: 'boar_tusk', name: 'イノシシの牙', desc: '鋭い牙', dropRate: 0.5 },
       color: '#8b6040', draw: drawBoar,
     },
     {
       id: 'wild_chicken', name: 'ヤドリドリ',
-      hp: 5, atk: 2, def: 0, exp: 3,
+      hp: 5, atk: 2, def: 0, exp: 6,
       meat: { id: 'chicken_meat', name: 'とり肉', desc: 'ジューシーなもも肉', healAmount: 5 },
       material: { id: 'chicken_feather', name: 'とりの羽', desc: 'ふわふわの羽', dropRate: 0.7 },
       color: '#e0c060', draw: drawChicken,
     },
     {
       id: 'bear', name: 'ツキノワグマ',
-      hp: 30, atk: 10, def: 5, exp: 25,
+      hp: 30, atk: 10, def: 5, exp: 35,
       meat: { id: 'bear_meat', name: 'クマ肉', desc: '力がみなぎる味', healAmount: 5 },
       material: { id: 'bear_claw', name: 'クマの爪', desc: '鋭く頑丈な爪', dropRate: 0.4 },
       color: '#4a3a2a', draw: drawBear,
     },
     {
       id: 'deer', name: 'シカ',
-      hp: 12, atk: 4, def: 2, exp: 8,
+      hp: 12, atk: 4, def: 2, exp: 12,
       meat: { id: 'deer_meat', name: 'シカ肉', desc: 'さっぱりした赤身', healAmount: 5 },
       material: { id: 'deer_antler', name: 'シカの角', desc: '立派な角', dropRate: 0.5 },
       color: '#b08050', draw: drawDeer,
@@ -222,12 +222,12 @@ const Battle = (() => {
       atk: baseAtk + level * 2,
       def: baseDef + level * 1,
       exp,
-      nextExp: level * 20,
+      nextExp: level * 12,
     };
   }
 
   function checkLevelUp() {
-    const needed = level * 20;
+    const needed = level * 12;
     if (exp >= needed) {
       exp -= needed;
       level++;
@@ -466,7 +466,7 @@ const Battle = (() => {
     ctx.fillStyle = phpRatio > 0.3 ? '#40c040' : '#e04040';
     ctx.fillRect(sx + 35, sy + 33, 100 * phpRatio, 10);
     ctx.fillStyle = '#fff'; ctx.fillText(`${playerHp}/${playerMaxHp}`, sx + 140, sy + 42);
-    ctx.fillText(`EXP ${exp}/${level * 20}`, sx + 10, sy + 60);
+    ctx.fillText(`EXP ${exp}/${level * 12}`, sx + 10, sy + 60);
 
     if (flashPlayer && Math.floor(animTimer * 10) % 2 === 0) {
       ctx.fillStyle = 'rgba(255, 0, 0, 0.3)'; ctx.fillRect(sx, sy, sw, sh);
