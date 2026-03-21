@@ -185,8 +185,11 @@ const Battle = (() => {
   let flashPlayer = false;
   let shakeAmount = 0;
 
-  const COMMANDS = ['たたかう', 'ぼうぎょ', 'にげる'];
+  const COMMANDS = ['たたかう', 'どうぐ', 'ぼうぎょ', 'にげる'];
   let defending = false;
+  let itemPhase = false; // どうぐ選択中
+  let itemCursor = 0;
+  let itemList = []; // 戦闘中の回復アイテム一覧
 
   // プレイヤーステータス
   let level = 1;
@@ -236,8 +239,19 @@ const Battle = (() => {
 
   // === バトル開始 ===
   function start() {
-    const idx = Math.floor(Math.random() * ENEMIES.length);
-    beginBattle({ ...ENEMIES[idx] });
+    // レベルが低いときはツキノワグマの出現率を下げる
+    let pool = ENEMIES;
+    if (level < 5) {
+      pool = ENEMIES.filter(e => e.id !== 'bear');
+      // Lv3以上なら低確率で出る
+      if (level >= 3 && Math.random() < 0.15) {
+        const bear = ENEMIES.find(e => e.id === 'bear');
+        beginBattle({ ...bear });
+        return;
+      }
+    }
+    const idx = Math.floor(Math.random() * pool.length);
+    beginBattle({ ...pool[idx] });
   }
 
   function startBoss(bossId) {
@@ -263,6 +277,7 @@ const Battle = (() => {
     messageTimer = 0;
     resultType = '';
     defending = false;
+    itemPhase = false;
     flashEnemy = false;
     flashPlayer = false;
     shakeAmount = 0;
@@ -276,14 +291,31 @@ const Battle = (() => {
     animTimer += dt;
 
     if (phase === 'select') {
-      if (Engine.isKeyJustPressed('ArrowUp') || Engine.isKeyJustPressed('w')) {
-        cursor = (cursor - 1 + COMMANDS.length) % COMMANDS.length;
-      }
-      if (Engine.isKeyJustPressed('ArrowDown') || Engine.isKeyJustPressed('s')) {
-        cursor = (cursor + 1) % COMMANDS.length;
-      }
-      if (Engine.isKeyJustPressed(' ') || Engine.isKeyJustPressed('Enter')) {
-        executeCommand(COMMANDS[cursor]);
+      if (itemPhase) {
+        // どうぐ選択中
+        if (Engine.isKeyJustPressed('Escape')) {
+          itemPhase = false;
+        } else if (itemList.length > 0) {
+          if (Engine.isKeyJustPressed('ArrowUp') || Engine.isKeyJustPressed('w')) {
+            itemCursor = (itemCursor - 1 + itemList.length) % itemList.length;
+          }
+          if (Engine.isKeyJustPressed('ArrowDown') || Engine.isKeyJustPressed('s')) {
+            itemCursor = (itemCursor + 1) % itemList.length;
+          }
+          if (Engine.isKeyJustPressed(' ') || Engine.isKeyJustPressed('Enter')) {
+            useBattleItem(itemList[itemCursor]);
+          }
+        }
+      } else {
+        if (Engine.isKeyJustPressed('ArrowUp') || Engine.isKeyJustPressed('w')) {
+          cursor = (cursor - 1 + COMMANDS.length) % COMMANDS.length;
+        }
+        if (Engine.isKeyJustPressed('ArrowDown') || Engine.isKeyJustPressed('s')) {
+          cursor = (cursor + 1) % COMMANDS.length;
+        }
+        if (Engine.isKeyJustPressed(' ') || Engine.isKeyJustPressed('Enter')) {
+          executeCommand(COMMANDS[cursor]);
+        }
       }
     } else if (phase === 'player_attack' || phase === 'enemy_attack') {
       messageTimer += dt;
@@ -305,7 +337,32 @@ const Battle = (() => {
     }
   }
 
+  function useBattleItem(item) {
+    if (item.healAmount > 0) {
+      const before = playerHp;
+      playerHp = Math.min(playerMaxHp, playerHp + item.healAmount);
+      currentHp = playerHp;
+      const healed = playerHp - before;
+      Inventory.remove(item.id, 1);
+      message = `${PlayerData.getName()}は ${item.name}を たべた！\nHPが ${healed} かいふくした！`;
+      phase = 'player_attack'; messageTimer = 0;
+      itemPhase = false;
+    }
+  }
+
   function executeCommand(cmd) {
+    if (cmd === 'どうぐ') {
+      // 回復アイテム一覧を取得
+      itemList = Inventory.getAllWithIds().filter(i => i.healAmount > 0);
+      if (itemList.length === 0) {
+        message = '使えるどうぐがない...';
+        phase = 'player_attack'; messageTimer = 0;
+      } else {
+        itemCursor = 0;
+        itemPhase = true;
+      }
+      return;
+    }
     if (cmd === 'たたかう') {
       const dmg = Math.max(1, playerAtk - enemy.def + Math.floor(Math.random() * 4) - 2);
       enemyHp = Math.max(0, enemyHp - dmg);
@@ -424,7 +481,7 @@ const Battle = (() => {
 
     // コマンド
     if (phase === 'select') {
-      const cw = 130, ch = 100, ccx = 15, ccy = H - mh - ch - 20;
+      const cw = 130, ch = 128, ccx = 15, ccy = H - mh - ch - 20;
       ctx.fillStyle = 'rgba(0,0,0,0.85)'; ctx.fillRect(ccx, ccy, cw, ch);
       ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(ccx, ccy, cw, ch);
       ctx.font = '14px sans-serif';
@@ -432,6 +489,29 @@ const Battle = (() => {
         ctx.fillStyle = i === cursor ? '#f0d060' : '#fff';
         ctx.fillText(`${i === cursor ? '▶' : '　'} ${cmd}`, ccx + 12, ccy + 28 + i * 28);
       });
+
+      // どうぐ選択ウィンドウ
+      if (itemPhase) {
+        const iw = 220, ih = Math.max(60, 30 + itemList.length * 24);
+        const ix = ccx + cw + 10, iy = ccy;
+        ctx.fillStyle = 'rgba(0,0,0,0.9)'; ctx.fillRect(ix, iy, iw, ih);
+        ctx.strokeStyle = '#80d0ff'; ctx.lineWidth = 2; ctx.strokeRect(ix, iy, iw, ih);
+        ctx.font = '13px sans-serif'; ctx.textAlign = 'left';
+        if (itemList.length === 0) {
+          ctx.fillStyle = '#888';
+          ctx.fillText('使えるどうぐがない', ix + 10, iy + 30);
+        } else {
+          itemList.forEach((item, i) => {
+            const sel = i === itemCursor;
+            ctx.fillStyle = sel ? '#ffe080' : '#fff';
+            ctx.fillText(`${sel ? '▶' : '　'} ${item.name} x${item.count}`, ix + 8, iy + 22 + i * 24);
+            ctx.fillStyle = '#ff6080';
+            ctx.fillText(`♥+${item.healAmount}`, ix + 170, iy + 22 + i * 24);
+          });
+        }
+        ctx.fillStyle = '#666'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('Esc:もどる', ix + iw / 2, iy + ih - 5);
+      }
     }
 
     if (phase === 'result' && messageTimer > 2.0) {

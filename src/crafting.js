@@ -7,15 +7,15 @@ const Crafting = (() => {
 
   // レシピ一覧
   const RECIPES = [
-    { result: 'tusk_knife',    materials: { boar_tusk: 2 },                          desc: 'ATK+3' },
-    { result: 'antler_spear',  materials: { deer_antler: 2, chicken_feather: 1 },    desc: 'ATK+5 DEF+1' },
-    { result: 'bear_sword',    materials: { bear_claw: 2, boar_tusk: 1 },            desc: 'ATK+6' },
-    { result: 'feather_hat',   materials: { chicken_feather: 3 },                    desc: 'DEF+1' },
-    { result: 'fur_armor',     materials: { rabbit_fur: 3 },                         desc: 'DEF+2' },
-    { result: 'antler_shield', materials: { deer_antler: 2, rabbit_fur: 1 },         desc: 'DEF+4' },
-    { result: 'bear_armor',    materials: { bear_claw: 1, rabbit_fur: 2 },           desc: 'DEF+5' },
-    { result: 'murakon_blade', materials: { murakon_fang: 2, bear_claw: 1 },         desc: 'ATK+10 DEF+2' },
-    { result: 'murakon_armor', materials: { murakon_scale: 2, rabbit_fur: 2 },       desc: 'ATK+2 DEF+8' },
+    { result: 'tusk_knife',    materials: { boar_tusk: 1 },                          desc: 'ATK+3' },
+    { result: 'antler_spear',  materials: { deer_antler: 1, chicken_feather: 1 },    desc: 'ATK+5 DEF+1' },
+    { result: 'bear_sword',    materials: { bear_claw: 1, boar_tusk: 1 },            desc: 'ATK+6' },
+    { result: 'feather_hat',   materials: { chicken_feather: 2 },                    desc: 'DEF+1' },
+    { result: 'fur_armor',     materials: { rabbit_fur: 2 },                         desc: 'DEF+2' },
+    { result: 'antler_shield', materials: { deer_antler: 1, rabbit_fur: 1 },         desc: 'DEF+4' },
+    { result: 'bear_armor',    materials: { bear_claw: 1, rabbit_fur: 1 },           desc: 'DEF+5' },
+    { result: 'murakon_blade', materials: { murakon_fang: 1, bear_claw: 1 },         desc: 'ATK+10 DEF+2' },
+    { result: 'murakon_armor', materials: { murakon_scale: 1, rabbit_fur: 1 },       desc: 'ATK+2 DEF+8' },
   ];
 
   // 素材名マップ
