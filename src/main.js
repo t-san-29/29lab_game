@@ -6,11 +6,12 @@
     'ミズキチ・イェーガー',
     'ヒータン・ミータン',
   ];
-  let gamePhase = 'name_select'; // name_select → playing → ending
+  let gamePhase = 'title'; // title → name_select → playing → ending
   let nameCursor = 0;
   let nameDialogPhase = 'ask'; // ask → select → confirm
   let endingPhase = 0; // 0=wake, 1=room, 2=mom_voice
   let endingTimer = 0;
+  let titleTimer = 0; // タイトル画面アニメ用
   let wasBattleActive = false; // バトル終了検知用
   let wasBossBattle = false; // ボス戦かどうか
 
@@ -109,6 +110,15 @@
 
   // === 更新処理 ===
   function update(dt) {
+    // タイトル画面
+    if (gamePhase === 'title') {
+      titleTimer += dt;
+      if (Engine.isKeyJustPressed(' ') || Engine.isKeyJustPressed('Enter')) {
+        gamePhase = 'name_select';
+      }
+      return;
+    }
+
     // 名前選択フェーズ
     if (gamePhase === 'name_select') {
       updateNameSelect();
@@ -198,6 +208,12 @@
 
   // === 描画処理 ===
   function render(ctx) {
+    // タイトル画面
+    if (gamePhase === 'title') {
+      renderTitle(ctx);
+      return;
+    }
+
     // 名前選択画面
     if (gamePhase === 'name_select') {
       renderNameSelect(ctx);
@@ -284,8 +300,8 @@
       ctx.font = '13px sans-serif';
       const momLine = `ほらほら！${PlayerData.getName()}！`;
       ctx.fillText(momLine, boxX + 14, boxY + 50);
-      ctx.fillText('ゲームやテレビもいいけど、ほかにも好きなこと', boxX + 14, boxY + 70);
-      ctx.fillText('たくさん見つけてたくさん遊ぶんですよ', boxX + 14, boxY + 88);
+      ctx.fillText('ゲームやテレビもいいけど、他にもたくさん遊んで', boxX + 14, boxY + 70);
+      ctx.fillText('好きなことみつけるんですよ', boxX + 14, boxY + 88);
 
       if (endingTimer > 2.0) {
         ctx.fillStyle = '#aaa'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
@@ -301,7 +317,7 @@
       ctx.fillText('Fin.', W / 2, H / 2 - 30);
       ctx.fillStyle = '#fff';
       ctx.font = '14px sans-serif';
-      ctx.fillText('29Lab RPG  〜 はじまりの村 〜', W / 2, H / 2 + 10);
+      ctx.fillText('29lab.クエスト  〜 はじまりの村 〜', W / 2, H / 2 + 10);
       ctx.fillStyle = '#aaa';
       ctx.font = '12px sans-serif';
       ctx.fillText('ありがとうございました！', W / 2, H / 2 + 40);
@@ -364,6 +380,148 @@
     ctx.fillStyle = '#e0c040'; ctx.fillRect(15, 65, 15, 20);
     ctx.fillStyle = '#a060a0'; ctx.fillRect(33, 65, 12, 20);
     ctx.fillStyle = '#e08040'; ctx.fillRect(48, 65, 10, 20);
+  }
+
+  // ドラクエ風タイトル画面
+  function renderTitle(ctx) {
+    const W = Engine.WIDTH, H = Engine.HEIGHT;
+    const t = titleTimer;
+
+    // 背景グラデーション（深い青～紫）
+    const grad = ctx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, '#0a0a30');
+    grad.addColorStop(0.5, '#1a1050');
+    grad.addColorStop(1, '#0a0a30');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    // 星空
+    ctx.fillStyle = '#fff';
+    for (let i = 0; i < 60; i++) {
+      const sx = (i * 137 + 50) % W;
+      const sy = (i * 97 + 30) % (H * 0.6);
+      const twinkle = Math.sin(t * 2 + i) * 0.5 + 0.5;
+      ctx.globalAlpha = 0.3 + twinkle * 0.7;
+      ctx.fillRect(sx, sy, 2, 2);
+    }
+    ctx.globalAlpha = 1;
+
+    // 地平線の山並み
+    ctx.fillStyle = '#1a1040';
+    ctx.beginPath();
+    ctx.moveTo(0, H * 0.65);
+    ctx.lineTo(80, H * 0.5);
+    ctx.lineTo(160, H * 0.58);
+    ctx.lineTo(250, H * 0.45);
+    ctx.lineTo(340, H * 0.55);
+    ctx.lineTo(430, H * 0.48);
+    ctx.lineTo(520, H * 0.56);
+    ctx.lineTo(600, H * 0.5);
+    ctx.lineTo(W, H * 0.6);
+    ctx.lineTo(W, H);
+    ctx.lineTo(0, H);
+    ctx.closePath();
+    ctx.fill();
+
+    // 地面
+    ctx.fillStyle = '#0a1a0a';
+    ctx.fillRect(0, H * 0.75, W, H * 0.25);
+    ctx.fillStyle = '#102010';
+    for (let x = 0; x < W; x += 15) {
+      const gh = 3 + Math.sin(x * 0.3 + t) * 2;
+      ctx.fillRect(x, H * 0.75 - gh, 3, gh);
+    }
+
+    // タイトルロゴ
+    const titleY = 100 + Math.sin(t * 0.8) * 8;
+
+    // タイトル影
+    ctx.fillStyle = '#000';
+    ctx.font = 'bold 42px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('29lab.クエスト', W / 2 + 3, titleY + 3);
+
+    // タイトル本体（金色グラデ風）
+    const titleGrad = ctx.createLinearGradient(W / 2 - 150, titleY - 40, W / 2 + 150, titleY);
+    titleGrad.addColorStop(0, '#f0d060');
+    titleGrad.addColorStop(0.3, '#fff8c0');
+    titleGrad.addColorStop(0.5, '#f0d060');
+    titleGrad.addColorStop(0.7, '#fff8c0');
+    titleGrad.addColorStop(1, '#c0a030');
+    ctx.fillStyle = titleGrad;
+    ctx.font = 'bold 42px sans-serif';
+    ctx.fillText('29lab.クエスト', W / 2, titleY);
+
+    // タイトル外枠光
+    ctx.strokeStyle = `rgba(255, 240, 160, ${0.4 + Math.sin(t * 1.5) * 0.3})`;
+    ctx.lineWidth = 2;
+    ctx.strokeText('29lab.クエスト', W / 2, titleY);
+
+    // サブタイトル
+    const subAlpha = Math.min(1, Math.max(0, (t - 1.0) / 1.0));
+    ctx.fillStyle = `rgba(200, 200, 255, ${subAlpha})`;
+    ctx.font = '16px sans-serif';
+    ctx.fillText('〜 はじまりの村 〜', W / 2, titleY + 45);
+
+    // 装飾ライン
+    ctx.strokeStyle = `rgba(240, 208, 96, ${0.5 + Math.sin(t) * 0.3})`;
+    ctx.lineWidth = 1;
+    const lineW = 180;
+    ctx.beginPath();
+    ctx.moveTo(W / 2 - lineW, titleY + 55);
+    ctx.lineTo(W / 2 - 20, titleY + 55);
+    ctx.moveTo(W / 2 + 20, titleY + 55);
+    ctx.lineTo(W / 2 + lineW, titleY + 55);
+    ctx.stroke();
+    // ダイヤ装飾
+    ctx.fillStyle = '#f0d060';
+    ctx.beginPath();
+    ctx.moveTo(W / 2, titleY + 50);
+    ctx.lineTo(W / 2 + 5, titleY + 55);
+    ctx.lineTo(W / 2, titleY + 60);
+    ctx.lineTo(W / 2 - 5, titleY + 55);
+    ctx.closePath();
+    ctx.fill();
+
+    // 勇者シルエット
+    const heroY = H * 0.65;
+    ctx.fillStyle = '#1a1a3a';
+    // 体
+    ctx.fillRect(W / 2 - 8, heroY - 30, 16, 24);
+    // 頭
+    ctx.beginPath();
+    ctx.arc(W / 2, heroY - 38, 10, 0, Math.PI * 2);
+    ctx.fill();
+    // 剣
+    ctx.fillRect(W / 2 + 12, heroY - 50, 3, 35);
+    ctx.fillRect(W / 2 + 8, heroY - 20, 11, 3);
+    // 足
+    ctx.fillRect(W / 2 - 8, heroY - 6, 6, 10);
+    ctx.fillRect(W / 2 + 2, heroY - 6, 6, 10);
+    // マント（なびく）
+    ctx.beginPath();
+    ctx.moveTo(W / 2 - 8, heroY - 28);
+    ctx.lineTo(W / 2 - 20 - Math.sin(t * 2) * 5, heroY - 10);
+    ctx.lineTo(W / 2 - 8, heroY - 8);
+    ctx.closePath();
+    ctx.fill();
+
+    // 「Press Space」点滅
+    if (t > 1.5) {
+      const blink = Math.sin(t * 3) > -0.3;
+      if (blink) {
+        ctx.fillStyle = '#fff';
+        ctx.font = '15px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('PRESS SPACE KEY', W / 2, H - 50);
+      }
+    }
+
+    // コピーライト
+    ctx.fillStyle = '#556';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('29lab.', W / 2, H - 15);
   }
 
   // 名前選択画面の描画
