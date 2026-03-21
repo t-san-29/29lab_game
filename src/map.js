@@ -41,8 +41,8 @@ const GameMap = (() => {
         6,0,2,2,0,0,0,0,0,3,3,3,3,3,3,0,0,0,0,6,
         6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,
         6,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,
-        6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,
-        6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
+        6,0,0,0,0,0,0,0,0,3,3,3,0,0,0,0,0,0,0,6,
+        6,6,6,6,6,6,6,6,6,3,3,3,6,6,6,6,6,6,6,6,
       ],
       playerStart: { x: 9, y: 9 },
       npcs: [
@@ -64,6 +64,9 @@ const GameMap = (() => {
       ],
       exits: [
         { x: 19, y: 7, target: 'dungeon', targetX: 1, targetY: 7 },
+        { x: 9, y: 14, target: 'sacred_grove', targetX: 10, targetY: 1 },
+        { x: 10, y: 14, target: 'sacred_grove', targetX: 10, targetY: 1 },
+        { x: 11, y: 14, target: 'sacred_grove', targetX: 10, targetY: 1 },
       ],
     },
     dungeon: {
@@ -106,6 +109,44 @@ const GameMap = (() => {
         { x: 0, y: 6, target: 'village', targetX: 18, targetY: 7 },
         { x: 0, y: 7, target: 'village', targetX: 18, targetY: 7 },
         { x: 0, y: 8, target: 'village', targetX: 18, targetY: 7 },
+      ],
+    },
+    sacred_grove: {
+      width: 20,
+      height: 15,
+      data: [
+        6,6,6,6,6,6,6,6,6,3,3,3,6,6,6,6,6,6,6,6,
+        6,6,6,6,6,6,6,6,6,3,3,3,6,6,6,6,6,6,6,6,
+        6,6,6,6,6,6,6,6,3,3,0,3,3,6,6,6,6,6,6,6,
+        6,6,6,6,6,6,6,3,3,0,0,0,3,3,6,6,6,6,6,6,
+        6,6,6,6,6,6,3,3,0,0,0,0,0,3,3,6,6,6,6,6,
+        6,6,6,6,6,3,3,0,0,0,0,0,0,0,3,3,6,6,6,6,
+        6,6,6,6,3,3,0,0,0,0,0,0,0,0,0,3,3,6,6,6,
+        6,6,6,3,3,0,0,0,0,0,0,0,0,0,0,0,3,3,6,6,
+        6,6,6,6,3,3,0,0,0,0,0,0,0,0,0,3,3,6,6,6,
+        6,6,6,6,6,3,3,0,0,0,0,0,0,0,3,3,6,6,6,6,
+        6,6,6,6,6,6,3,3,0,0,0,0,0,3,3,6,6,6,6,6,
+        6,6,6,6,6,6,6,3,3,0,0,0,3,3,6,6,6,6,6,6,
+        6,6,6,6,6,6,6,6,3,3,0,3,3,6,6,6,6,6,6,6,
+        6,6,6,6,6,6,6,6,6,3,3,3,6,6,6,6,6,6,6,6,
+        6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
+      ],
+      playerStart: { x: 10, y: 1 },
+      npcs: [
+        { id: 'holy_sword', x: 10, y: 7, name: 'せいけんタケテーン', type: 'sword', color: '#f0e860',
+          dialogFn: () => [
+            '...光を放つ剣が、大地に深く突き刺さっている。',
+            'この剣からは、とてつもない力を感じる...',
+            PlayerData.getName() + 'は 剣に手をかけた！',
+            '......ズズズズ......!!',
+            'せいけんタケテーン を ひきぬいた！！',
+          ]
+        },
+      ],
+      exits: [
+        { x: 9, y: 0, target: 'village', targetX: 10, targetY: 13 },
+        { x: 10, y: 0, target: 'village', targetX: 10, targetY: 13 },
+        { x: 11, y: 0, target: 'village', targetX: 10, targetY: 13 },
       ],
     },
   };
@@ -185,10 +226,16 @@ const GameMap = (() => {
     if (currentMapName === 'village') {
       ctx.fillStyle = '#ffe080'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText('→ダンジョン', 19 * ts + ts / 2, 7 * ts - 4);
+      ctx.fillStyle = '#ffe080';
+      ctx.fillText('↓聖なる森', 10 * ts + ts / 2, 14 * ts - 4);
     }
     if (currentMapName === 'dungeon') {
       ctx.fillStyle = '#80ffe0'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText('←村へ戻る', 0 * ts + ts, 6 * ts - 4);
+    }
+    if (currentMapName === 'sacred_grove') {
+      ctx.fillStyle = '#80ffe0'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('↑村へ戻る', 10 * ts + ts / 2, 0 * ts + ts + 10);
     }
   }
 

@@ -39,6 +39,16 @@ const NPC = (() => {
     return null;
   }
 
+  // 特定タイプの会話完了をチェック（呼ぶと消費される）
+  function consumeCompleted(type) {
+    if (lastCompletedNpc && lastCompletedNpc.type === type) {
+      const npc = lastCompletedNpc;
+      lastCompletedNpc = null;
+      return npc;
+    }
+    return null;
+  }
+
   function update() {
     if (activeDialog) {
       if (Engine.isKeyJustPressed(' ') || Engine.isKeyJustPressed('Enter')) {
@@ -55,7 +65,8 @@ const NPC = (() => {
       const facing = Player.getFacing();
       const npc = getAt(facing.x, facing.y);
       if (npc) {
-        activeDialog = { npc, lines: npc.dialog, index: 0 };
+        const lines = npc.dialogFn ? npc.dialogFn() : npc.dialog;
+        activeDialog = { npc, lines, index: 0 };
       }
     }
   }
@@ -91,6 +102,33 @@ const NPC = (() => {
         ctx.strokeStyle = `rgba(160, 40, 255, ${0.3 + Math.sin(t) * 0.2})`;
         ctx.lineWidth = 1;
         ctx.beginPath(); ctx.ellipse(px + 16, py + 12, 16 + Math.sin(t) * 2, 14 + Math.cos(t) * 2, 0, 0, Math.PI * 2); ctx.stroke();
+      } else if (npc.type === 'sword') {
+        // 聖剣（地面に突き刺さった剣）
+        const st = performance.now() / 500;
+        // 光の柱エフェクト
+        const glowAlpha = 0.15 + Math.sin(st) * 0.1;
+        ctx.fillStyle = `rgba(255, 232, 96, ${glowAlpha})`;
+        ctx.fillRect(px + 10, py - 20, 12, 52);
+        // 刀身
+        ctx.fillStyle = '#e0e8ff';
+        ctx.fillRect(px + 14, py - 8, 4, 20);
+        // 刀身のハイライト
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(px + 15, py - 6, 2, 16);
+        // ツバ（横棒）
+        ctx.fillStyle = '#f0d060';
+        ctx.fillRect(px + 8, py + 12, 16, 4);
+        // 柄
+        ctx.fillStyle = '#8b4513';
+        ctx.fillRect(px + 14, py + 16, 4, 10);
+        // 宝玉
+        ctx.fillStyle = '#40c0ff';
+        ctx.beginPath(); ctx.arc(px + 16, py + 14, 3, 0, Math.PI * 2); ctx.fill();
+        // キラキラエフェクト
+        ctx.fillStyle = `rgba(255, 255, 200, ${0.5 + Math.sin(st * 2) * 0.5})`;
+        ctx.fillRect(px + 6 + Math.sin(st * 1.3) * 4, py - 4, 2, 2);
+        ctx.fillRect(px + 22 + Math.cos(st * 1.7) * 4, py + 4, 2, 2);
+        ctx.fillRect(px + 12 + Math.sin(st * 2.1) * 3, py - 12, 2, 2);
       } else {
         // 通常NPC
         ctx.fillStyle = npc.color || '#aaa'; ctx.fillRect(px + 6, py + 10, 20, 18);
@@ -118,7 +156,8 @@ const NPC = (() => {
     const isProtag = activeDialog.npc.name === PlayerData.getName();
     const isSign = activeDialog.npc.type === 'sign';
     const isBoss = activeDialog.npc.type === 'boss';
-    ctx.fillStyle = isProtag ? '#80d0ff' : (isBoss ? '#e040ff' : (isSign ? '#ff8060' : '#f0d060'));
+    const isSword = activeDialog.npc.type === 'sword';
+    ctx.fillStyle = isProtag ? '#80d0ff' : (isBoss ? '#e040ff' : (isSword ? '#f0e860' : (isSign ? '#ff8060' : '#f0d060')));
     ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'left';
     ctx.fillText(activeDialog.npc.name, 24, boxY + 22);
 
@@ -131,5 +170,5 @@ const NPC = (() => {
     ctx.fillText(hint, W - 24, boxY + boxH - 12);
   }
 
-  return { init, removeNpc, getAt, isDialogActive, showMonologue, consumeCompletedBoss, update, renderNPCs, renderDialog };
+  return { init, removeNpc, getAt, isDialogActive, showMonologue, consumeCompletedBoss, consumeCompleted, update, renderNPCs, renderDialog };
 })();

@@ -1,38 +1,38 @@
 // ドラクエ風ターン制バトルシステム
 const Battle = (() => {
-  // === 敵（動物）データ === HP全て2/3に調整
+  // === 敵（動物）データ ===
   const ENEMIES = [
     {
       id: 'slime_rabbit', name: 'スライムうさぎ',
-      hp: 8, atk: 3, def: 1, exp: 8,
+      hp: 15, atk: 5, def: 2, exp: 10,
       meat: { id: 'rabbit_meat', name: 'うさぎ肉', desc: 'やわらかくておいしい', healAmount: 5 },
       material: { id: 'rabbit_fur', name: 'うさぎの毛皮', desc: '柔らかい毛皮', dropRate: 0.6 },
       color: '#e8a0c8', draw: drawRabbit,
     },
     {
       id: 'wild_boar', name: 'イノシシ',
-      hp: 17, atk: 6, def: 3, exp: 18,
+      hp: 30, atk: 9, def: 4, exp: 22,
       meat: { id: 'boar_meat', name: 'イノシシ肉', desc: 'ジビエの王様', healAmount: 5 },
       material: { id: 'boar_tusk', name: 'イノシシの牙', desc: '鋭い牙', dropRate: 0.5 },
       color: '#8b6040', draw: drawBoar,
     },
     {
       id: 'wild_chicken', name: 'ヤドリドリ',
-      hp: 5, atk: 2, def: 0, exp: 6,
+      hp: 10, atk: 4, def: 1, exp: 8,
       meat: { id: 'chicken_meat', name: 'とり肉', desc: 'ジューシーなもも肉', healAmount: 5 },
       material: { id: 'chicken_feather', name: 'とりの羽', desc: 'ふわふわの羽', dropRate: 0.7 },
       color: '#e0c060', draw: drawChicken,
     },
     {
       id: 'bear', name: 'ツキノワグマ',
-      hp: 30, atk: 10, def: 5, exp: 35,
+      hp: 50, atk: 14, def: 7, exp: 45,
       meat: { id: 'bear_meat', name: 'クマ肉', desc: '力がみなぎる味', healAmount: 5 },
       material: { id: 'bear_claw', name: 'クマの爪', desc: '鋭く頑丈な爪', dropRate: 0.4 },
       color: '#4a3a2a', draw: drawBear,
     },
     {
       id: 'deer', name: 'シカ',
-      hp: 12, atk: 4, def: 2, exp: 12,
+      hp: 20, atk: 7, def: 3, exp: 15,
       meat: { id: 'deer_meat', name: 'シカ肉', desc: 'さっぱりした赤身', healAmount: 5 },
       material: { id: 'deer_antler', name: 'シカの角', desc: '立派な角', dropRate: 0.5 },
       color: '#b08050', draw: drawDeer,
@@ -43,7 +43,7 @@ const Battle = (() => {
   const BOSSES = {
     murakon: {
       id: 'murakon', name: '魔獣ムラコン',
-      hp: 80, atk: 12, def: 5, exp: 100,
+      hp: 120, atk: 18, def: 8, exp: 150,
       meat: { id: 'murakon_fang', name: 'ムラコンの牙', desc: '魔力を帯びた牙' },
       material: { id: 'murakon_scale', name: 'ムラコンの鱗', desc: '禍々しい鱗', dropRate: 1.0 },
       color: '#8020a0', draw: drawMurakon, isBoss: true,

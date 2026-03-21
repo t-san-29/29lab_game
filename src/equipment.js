@@ -7,6 +7,7 @@ const Equipment = (() => {
     bear_sword:    { name: 'クマ爪の剣',     type: 'weapon', atk: 6, def: 0, desc: 'クマの爪を刃にした大剣' },
     antler_spear:  { name: 'シカ角の槍',     type: 'weapon', atk: 5, def: 1, desc: 'シカの角を穂先にした槍' },
     murakon_blade: { name: 'ムラコンの魔剣', type: 'weapon', atk: 10, def: 2, desc: '魔獣の牙から作った最強の剣' },
+    holy_sword:    { name: 'せいけんタケテーン', type: 'weapon', atk: 18, def: 3, desc: '聖なる森に眠っていた伝説の剣。圧倒的な力を秘める' },
     // 防具
     fur_armor:     { name: '毛皮の鎧',       type: 'armor', atk: 0, def: 2, desc: 'うさぎの毛皮で作った軽い鎧' },
     feather_hat:   { name: '羽の帽子',       type: 'armor', atk: 0, def: 1, desc: '鳥の羽で作った帽子' },

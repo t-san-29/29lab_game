@@ -16,6 +16,7 @@
   let wasBossBattle = false; // ボス戦かどうか
   let bgmStarted = false; // BGM開始済み
   let currentBgmScene = ''; // 現在のBGMシーン
+  let holySwordObtained = false; // 聖剣入手済み
 
   // === ゲーム本体の初期化（名前決定後に呼ぶ） ===
   let map, stepCount, lastPlayerX, lastPlayerY;
@@ -49,7 +50,7 @@
     lastPlayerX = targetX;
     lastPlayerY = targetY;
     // マップに応じたBGM切り替え
-    const bgm = mapName === 'village' ? 'village' : 'dungeon';
+    const bgm = mapName === 'village' ? 'village' : mapName === 'sacred_grove' ? 'village' : 'dungeon';
     if (currentBgmScene !== bgm) {
       BGM.playTrack(bgm);
       currentBgmScene = bgm;
@@ -91,6 +92,22 @@
       Battle.startBoss(bossNpc.bossId);
       BGM.playTrack('boss');
       wasBossBattle = true;
+    }
+  }
+
+  // 聖剣ピックアップ
+  function checkSwordPickup() {
+    if (holySwordObtained) return;
+    const completed = NPC.consumeCompleted('sword');
+    if (completed) {
+      holySwordObtained = true;
+      NPC.removeNpc('holy_sword');
+      Inventory.add('holy_sword', 'せいけんタケテーン', '聖なる森に眠っていた伝説の剣。圧倒的な力を秘める');
+      NPC.showMonologue([
+        'せいけんタケテーン を てにいれた！',
+        'すさまじい力が みなぎってくる...！',
+        'Eキーの装備画面から装備できそうだ。',
+      ]);
     }
   }
 
@@ -173,6 +190,7 @@
     }
 
     checkBossTrigger();
+    checkSwordPickup();
     Inventory.update();
     StatusScreen.update();
     Crafting.update();
