@@ -629,7 +629,9 @@ const Battle = (() => {
 
   function enemyTurn() {
     const defMod = defending ? playerDef * 2 : playerDef;
-    const dmg = Math.max(1, enemy.atk - defMod + Math.floor(Math.random() * 3) - 1);
+    const boostedAtk = Math.floor(enemy.atk * 1.5);
+    const minDmg = Math.max(1, Math.floor(enemy.atk * 0.25));
+    const dmg = Math.max(minDmg, boostedAtk - defMod + Math.floor(Math.random() * 3) - 1);
     playerHp = Math.max(0, playerHp - dmg);
     currentHp = playerHp;
     message = `${enemy.name}の こうげき！\n${PlayerData.getName()}に ${dmg} のダメージ！`;
