@@ -12,6 +12,7 @@
   let endingPhase = 0; // 0=wake, 1=room, 2=mom_voice
   let endingTimer = 0;
   let titleTimer = 0; // タイトル画面アニメ用
+  let titleCursor = 0; // 0=はじめから, 1=つづきから
   let wasBattleActive = false; // バトル終了検知用
   let wasBossBattle = false; // ボス戦かどうか
   let bgmStarted = false; // BGM開始済み
@@ -20,6 +21,76 @@
   let lastBossId = ''; // 最後に倒したボスID
   let murakonDefeatedTime = 0; // ムラコン撃破時刻（復活タイマー用）
   const MURAKON_RESPAWN_MS = 5 * 60 * 1000; // 5分で復活
+  let saveMessage = ''; // セーブ通知メッセージ
+  let saveMessageTimer = 0;
+  const SAVE_KEY = 'mizukichi_save';
+
+  // === セーブ/ロード ===
+  function saveGame() {
+    const data = {
+      version: 1,
+      name: PlayerData.getName(),
+      mapName: GameMap.getCurrentMapName(),
+      playerX: Player.x,
+      playerY: Player.y,
+      battle: Battle.getSaveData(),
+      inventory: Inventory.getSaveData(),
+      equipment: Equipment.getSaveData(),
+      holySwordObtained,
+      murakonDefeatedTime: murakonDefeatedTime > 0 ? Date.now() - murakonDefeatedTime : 0,
+    };
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+      saveMessage = 'セーブしました！';
+      saveMessageTimer = 2.0;
+    } catch (e) {
+      saveMessage = 'セーブに失敗しました...';
+      saveMessageTimer = 2.0;
+    }
+  }
+
+  function hasSaveData() {
+    return !!localStorage.getItem(SAVE_KEY);
+  }
+
+  function loadGame() {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return false;
+    try {
+      const data = JSON.parse(raw);
+      PlayerData.setName(data.name);
+      Battle.loadSaveData(data.battle);
+      Inventory.loadSaveData(data.inventory);
+      Equipment.loadSaveData(data.equipment);
+      holySwordObtained = data.holySwordObtained || false;
+      if (data.murakonDefeatedTime > 0) {
+        murakonDefeatedTime = Date.now() - data.murakonDefeatedTime;
+      } else {
+        murakonDefeatedTime = 0;
+      }
+      // マップをロードしてプレイヤー配置
+      map = GameMap.load(data.mapName);
+      Player.init(data.playerX, data.playerY);
+      NPC.init(map.npcs);
+      if (holySwordObtained) NPC.removeNpc('holy_sword');
+      // ムラコン復活チェック（セーブ中に5分経ってたら復活済みにする）
+      if (murakonDefeatedTime > 0 && Date.now() - murakonDefeatedTime >= MURAKON_RESPAWN_MS) {
+        murakonDefeatedTime = 0;
+      } else if (murakonDefeatedTime > 0) {
+        NPC.removeNpc('murakon');
+      }
+      stepCount = 0;
+      lastPlayerX = data.playerX;
+      lastPlayerY = data.playerY;
+      gamePhase = 'playing';
+      const bgm = (data.mapName === 'village' || data.mapName === 'sacred_grove') ? 'village' : 'dungeon';
+      BGM.playTrack(bgm);
+      currentBgmScene = bgm;
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 
   // === ゲーム本体の初期化（名前決定後に呼ぶ） ===
   let map, stepCount, lastPlayerX, lastPlayerY;
@@ -195,9 +266,41 @@
       }
       if (Engine.isKeyJustPressed(' ') || Engine.isKeyJustPressed('Enter')) {
         BGM.unlock();
-        BGM.playTrack('title');
         bgmStarted = true;
-        gamePhase = 'name_select';
+        if (hasSaveData()) {
+          gamePhase = 'title_menu';
+          titleCursor = 0;
+        } else {
+          BGM.playTrack('title');
+          gamePhase = 'name_select';
+        }
+      }
+      return;
+    }
+
+    // タイトルメニュー（はじめから/つづきから）
+    if (gamePhase === 'title_menu') {
+      titleTimer += dt;
+      if (Engine.isKeyJustPressed('ArrowUp') || Engine.isKeyJustPressed('w')) {
+        titleCursor = (titleCursor - 1 + 2) % 2;
+      }
+      if (Engine.isKeyJustPressed('ArrowDown') || Engine.isKeyJustPressed('s')) {
+        titleCursor = (titleCursor + 1) % 2;
+      }
+      if (Engine.isKeyJustPressed(' ') || Engine.isKeyJustPressed('Enter')) {
+        if (titleCursor === 0) {
+          // はじめから
+          BGM.playTrack('title');
+          gamePhase = 'name_select';
+        } else {
+          // つづきから
+          if (loadGame()) {
+            // ロード成功
+          } else {
+            saveMessage = 'ロードに失敗しました...';
+            saveMessageTimer = 2.0;
+          }
+        }
       }
       return;
     }
@@ -231,6 +334,18 @@
     if (NPC.isDialogActive()) {
       NPC.update();
       return;
+    }
+
+    // セーブ（Pキー）
+    if (Engine.isKeyJustPressed('p') || Engine.isKeyJustPressed('P')) {
+      if (!NPC.isDialogActive() && !Inventory.isOpen() && !StatusScreen.isOpen() && !Crafting.isOpen() && !Cooking.isActive()) {
+        saveGame();
+      }
+    }
+    // セーブメッセージタイマー
+    if (saveMessageTimer > 0) {
+      saveMessageTimer -= 0.016;
+      if (saveMessageTimer <= 0) saveMessage = '';
     }
 
     checkBossTrigger();
@@ -299,6 +414,13 @@
       return;
     }
 
+    // タイトルメニュー
+    if (gamePhase === 'title_menu') {
+      renderTitle(ctx);
+      renderTitleMenu(ctx);
+      return;
+    }
+
     // 名前選択画面
     if (gamePhase === 'name_select') {
       renderNameSelect(ctx);
@@ -336,7 +458,21 @@
     ctx.fillStyle = 'rgba(255,255,255,0.4)';
     ctx.font = '10px sans-serif';
     ctx.textAlign = 'right';
-    ctx.fillText('移動:矢印  話す:Space  I:持物  E:装備  C:クラフト', Engine.WIDTH - 8, 15);
+    ctx.fillText('移動:矢印  話す:Space  I:持物  E:装備  C:クラフト  P:セーブ', Engine.WIDTH - 8, 15);
+
+    // セーブメッセージ
+    if (saveMessage) {
+      const msgW = 200, msgH = 36;
+      const msgX = Engine.WIDTH / 2 - msgW / 2, msgY = 30;
+      ctx.fillStyle = 'rgba(0, 60, 0, 0.9)';
+      ctx.fillRect(msgX, msgY, msgW, msgH);
+      ctx.strokeStyle = '#80ff80'; ctx.lineWidth = 1;
+      ctx.strokeRect(msgX, msgY, msgW, msgH);
+      ctx.fillStyle = '#fff';
+      ctx.font = '13px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(saveMessage, Engine.WIDTH / 2, msgY + 23);
+    }
   }
 
   // エンディング描画
@@ -701,6 +837,28 @@
       ctx.fillStyle = '#aaa'; ctx.font = '11px sans-serif'; ctx.textAlign = 'right';
       ctx.fillText('■ スペースキーで始める', boxX + boxW - 14, boxY + boxH - 8);
     }
+  }
+
+  // タイトルメニュー描画（はじめから/つづきから）
+  function renderTitleMenu(ctx) {
+    const W = Engine.WIDTH, H = Engine.HEIGHT;
+    const menuW = 220, menuH = 90;
+    const menuX = W / 2 - menuW / 2, menuY = H - 130;
+
+    ctx.fillStyle = 'rgba(0, 0, 30, 0.92)';
+    ctx.fillRect(menuX, menuY, menuW, menuH);
+    ctx.strokeStyle = '#f0d060'; ctx.lineWidth = 2;
+    ctx.strokeRect(menuX, menuY, menuW, menuH);
+
+    const options = ['はじめから', 'つづきから'];
+    ctx.font = '16px sans-serif';
+    ctx.textAlign = 'left';
+    options.forEach((opt, i) => {
+      const y = menuY + 35 + i * 32;
+      const sel = i === titleCursor;
+      ctx.fillStyle = sel ? '#ffe080' : '#fff';
+      ctx.fillText(`${sel ? '▶ ' : '　 '}${opt}`, menuX + 20, y);
+    });
   }
 
   Engine.start(update, render);

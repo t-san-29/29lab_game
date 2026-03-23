@@ -185,5 +185,22 @@ const Inventory = (() => {
     ctx.fillText(`HP: ${stats.hp} / ${stats.maxHp}`, W - pad - 10, pad + 30);
   }
 
-  return { add, remove, hasItem, getItem, getAll, getAllWithIds, isOpen, close, update, render };
+  // セーブ/ロード用
+  function getSaveData() {
+    const data = {};
+    for (const [id, item] of Object.entries(items)) {
+      data[id] = { name: item.name, count: item.count, desc: item.desc, healAmount: item.healAmount || 0 };
+    }
+    return data;
+  }
+
+  function loadSaveData(data) {
+    // 全クリアしてからロード
+    for (const key of Object.keys(items)) delete items[key];
+    for (const [id, item] of Object.entries(data)) {
+      items[id] = { name: item.name, count: item.count, desc: item.desc, healAmount: item.healAmount || 0 };
+    }
+  }
+
+  return { add, remove, hasItem, getItem, getAll, getAllWithIds, isOpen, close, update, render, getSaveData, loadSaveData };
 })();
