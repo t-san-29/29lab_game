@@ -1,5 +1,13 @@
 // ドラクエ風ターン制バトルシステム
 const Battle = (() => {
+  // === プレイヤー魔法 ===
+  const PLAYER_SPELLS = [
+    { id: 'mera',   name: 'メラ',   cost: 2, minLv: 1,  power: 14, type: 'fire', desc: '炎の魔法' },
+    { id: 'heal',   name: 'ヒール', cost: 3, minLv: 3,  power: 28, type: 'heal', desc: '自分のHPを回復' },
+    { id: 'merami', name: 'メラミ', cost: 5, minLv: 8,  power: 36, type: 'fire', desc: '強力な炎の魔法' },
+    { id: 'meraza', name: 'メラゾーマ', cost: 8, minLv: 15, power: 60, type: 'fire', desc: '最強の炎の魔法' },
+  ];
+
   // === 敵（動物）データ ===
   const ENEMIES = [
     {
@@ -47,6 +55,8 @@ const Battle = (() => {
       meat: { id: 'wolf_meat', name: '狼肉', desc: '野性味あふれる肉', healAmount: 8 },
       material: { id: 'shadow_fang', name: '闇狼の牙', desc: '闇の力を帯びた牙', dropRate: 0.45 },
       color: '#3a2a4a', draw: drawShadowWolf,
+      spells: [{ name: '闇の牙', power: 18, type: 'dark', msg: '闇のエネルギーを放った！' }],
+      spellRate: 0.35,
     },
     {
       id: 'rock_golem', name: 'ロックゴーレム',
@@ -54,6 +64,8 @@ const Battle = (() => {
       meat: { id: 'magic_stone_s', name: '小さな魔石', desc: '淡く光る石', healAmount: 10 },
       material: { id: 'golem_core', name: 'ゴーレムの核', desc: '魔力が凝縮した核', dropRate: 0.35 },
       color: '#6a6a7a', draw: drawGolem,
+      spells: [{ name: '岩石落とし', power: 22, type: 'earth', msg: '巨大な岩を投げつけた！' }],
+      spellRate: 0.3,
     },
   ];
   const DUNGEON_ENEMIES_2 = [
@@ -63,6 +75,8 @@ const Battle = (() => {
       meat: { id: 'magic_stone_s', name: '小さな魔石', desc: '淡く光る石', healAmount: 10 },
       material: { id: 'golem_core', name: 'ゴーレムの核', desc: '魔力が凝縮した核', dropRate: 0.35 },
       color: '#6a6a7a', draw: drawGolem,
+      spells: [{ name: '岩石落とし', power: 22, type: 'earth', msg: '巨大な岩を投げつけた！' }],
+      spellRate: 0.3,
     },
     {
       id: 'dragon_puppy', name: 'ドラゴンパピー',
@@ -70,6 +84,8 @@ const Battle = (() => {
       meat: { id: 'dragon_meat', name: '竜肉', desc: '生命力に満ちた肉', healAmount: 15 },
       material: { id: 'dragon_scale', name: '竜の鱗', desc: '虹色に輝く硬い鱗', dropRate: 0.4 },
       color: '#c04040', draw: drawDragonPuppy,
+      spells: [{ name: '炎のブレス', power: 30, type: 'fire', msg: '炎の息を吹きかけた！' }],
+      spellRate: 0.4,
     },
   ];
   const DUNGEON_ENEMIES_3 = [
@@ -79,6 +95,8 @@ const Battle = (() => {
       meat: { id: 'dragon_meat', name: '竜肉', desc: '生命力に満ちた肉', healAmount: 15 },
       material: { id: 'dragon_scale', name: '竜の鱗', desc: '虹色に輝く硬い鱗', dropRate: 0.4 },
       color: '#c04040', draw: drawDragonPuppy,
+      spells: [{ name: '炎のブレス', power: 30, type: 'fire', msg: '炎の息を吹きかけた！' }],
+      spellRate: 0.4,
     },
     {
       id: 'death_knight', name: 'デスナイト',
@@ -86,6 +104,11 @@ const Battle = (() => {
       meat: { id: 'cursed_bone', name: '呪いの骨', desc: '不思議な力で回復する', healAmount: 20 },
       material: { id: 'dark_armor_piece', name: '漆黒の鎧片', desc: '闇の力が宿る鎧の欠片', dropRate: 0.3 },
       color: '#2a1a2a', draw: drawDeathKnight,
+      spells: [
+        { name: '死の呪い', power: 35, type: 'dark', msg: '死の呪いを放った！' },
+        { name: '暗黒魔法', power: 28, type: 'dark', msg: '暗黒の力で攻撃した！' },
+      ],
+      spellRate: 0.45,
     },
   ];
 
@@ -97,6 +120,11 @@ const Battle = (() => {
       meat: { id: 'murakon_fang', name: 'ムラコンの牙', desc: '魔力を帯びた牙' },
       material: { id: 'murakon_scale', name: 'ムラコンの鱗', desc: '禍々しい鱗', dropRate: 1.0 },
       color: '#8020a0', draw: drawMurakon, isBoss: true,
+      spells: [
+        { name: '闇の波動', power: 26, type: 'dark', msg: '闇のエネルギーを解き放った！' },
+        { name: '魔力の嵐', power: 20, type: 'dark', msg: '恐ろしい魔力の嵐を起こした！' },
+      ],
+      spellRate: 0.4,
     },
     oobaan: {
       id: 'oobaan', name: '闇竜オオバーン',
@@ -104,6 +132,12 @@ const Battle = (() => {
       meat: { id: 'oobaan_fang', name: 'オオバーンの牙', desc: '灼熱の力を帯びた巨大な牙' },
       material: { id: 'oobaan_scale', name: 'オオバーンの鱗', desc: '溶岩のように赤く光る鱗', dropRate: 1.0 },
       color: '#a01020', draw: drawOobaan, isBoss: true,
+      spells: [
+        { name: '業火ブレス', power: 50, type: 'fire', msg: '灼熱の業火を吐き出した！' },
+        { name: '竜の怒り', power: 40, type: 'fire', msg: '竜の怒りが爆発した！' },
+        { name: '闇炎', power: 45, type: 'dark', msg: '闇と炎が融合した魔法を放った！' },
+      ],
+      spellRate: 0.5,
     },
   };
 
@@ -410,11 +444,13 @@ const Battle = (() => {
   let flashPlayer = false;
   let shakeAmount = 0;
 
-  const COMMANDS = ['たたかう', 'どうぐ', 'ぼうぎょ', 'にげる'];
+  const COMMANDS = ['たたかう', 'まほう', 'どうぐ', 'ぼうぎょ', 'にげる'];
   let defending = false;
   let itemPhase = false; // どうぐ選択中
   let itemCursor = 0;
   let itemList = []; // 戦闘中の回復アイテム一覧
+  let magicPhase = false; // まほう選択中
+  let magicCursor = 0;
 
   // プレイヤーステータス
   let level = 1;
@@ -422,13 +458,22 @@ const Battle = (() => {
   let baseHp = 30;
   let baseAtk = 8;
   let baseDef = 3;
+  let baseMp = 8;
   let currentHp = -1;
+  let currentMp = -1;
+  let playerMaxMp = 0;
 
   function getMaxHp() { return baseHp + level * 5; }
+  function getMaxMp() { return baseMp + level * 3; }
 
   function getCurrentHp() {
     if (currentHp < 0) currentHp = getMaxHp();
     return currentHp;
+  }
+
+  function getCurrentMp() {
+    if (currentMp < 0) currentMp = getMaxMp();
+    return currentMp;
   }
 
   function heal(amount) {
@@ -444,6 +489,8 @@ const Battle = (() => {
       level,
       hp: getCurrentHp(),
       maxHp: getMaxHp(),
+      mp: getCurrentMp(),
+      maxMp: getMaxMp(),
       atk: baseAtk + level * 2,
       def: baseDef + level * 1,
       exp,
@@ -457,6 +504,7 @@ const Battle = (() => {
       exp -= needed;
       level++;
       currentHp = getMaxHp();
+      currentMp = getMaxMp();
       return true;
     }
     return false;
@@ -511,6 +559,9 @@ const Battle = (() => {
     playerAtk = baseAtk + level * 2 + bonus.atk;
     playerDef = baseDef + level * 1 + bonus.def;
 
+    playerMaxMp = getMaxMp();
+    currentMp = getCurrentMp();
+
     active = true;
     phase = 'select';
     cursor = 0;
@@ -519,6 +570,7 @@ const Battle = (() => {
     resultType = '';
     defending = false;
     itemPhase = false;
+    magicPhase = false;
     flashEnemy = false;
     flashPlayer = false;
     shakeAmount = 0;
@@ -545,6 +597,22 @@ const Battle = (() => {
           }
           if (Engine.isKeyJustPressed(' ') || Engine.isKeyJustPressed('Enter')) {
             useBattleItem(itemList[itemCursor]);
+          }
+        }
+      } else if (magicPhase) {
+        // まほう選択中
+        const spellList = PLAYER_SPELLS.filter(s => s.minLv <= level);
+        if (Engine.isKeyJustPressed('Escape')) {
+          magicPhase = false;
+        } else if (spellList.length > 0) {
+          if (Engine.isKeyJustPressed('ArrowUp') || Engine.isKeyJustPressed('w')) {
+            magicCursor = (magicCursor - 1 + spellList.length) % spellList.length;
+          }
+          if (Engine.isKeyJustPressed('ArrowDown') || Engine.isKeyJustPressed('s')) {
+            magicCursor = (magicCursor + 1) % spellList.length;
+          }
+          if (Engine.isKeyJustPressed(' ') || Engine.isKeyJustPressed('Enter')) {
+            executePlayerSpell(spellList[magicCursor]);
           }
         }
       } else {
@@ -591,7 +659,43 @@ const Battle = (() => {
     }
   }
 
+  function executePlayerSpell(spell) {
+    if (currentMp < spell.cost) {
+      message = 'MPが たりない！';
+      phase = 'player_attack'; messageTimer = 0; magicPhase = false;
+      return;
+    }
+    currentMp -= spell.cost;
+    magicPhase = false;
+    if (spell.type === 'heal') {
+      const healAmt = spell.power + level * 1 + Math.floor(Math.random() * 8);
+      const before = playerHp;
+      playerHp = Math.min(playerMaxHp, playerHp + healAmt);
+      currentHp = playerHp;
+      const healed = playerHp - before;
+      message = `${PlayerData.getName()}は ${spell.name}をとなえた！\nHPが ${healed} かいふくした！`;
+      phase = 'player_attack'; messageTimer = 0;
+    } else {
+      // 攻撃魔法（防御を無視）
+      const dmg = Math.max(1, spell.power + level * 2 + Math.floor(Math.random() * 8) - 4);
+      enemyHp = Math.max(0, enemyHp - dmg);
+      message = `${PlayerData.getName()}は ${spell.name}をとなえた！\n${enemy.name}に ${dmg} のダメージ！`;
+      phase = 'player_attack'; messageTimer = 0; flashEnemy = true; shakeAmount = 5;
+    }
+  }
+
   function executeCommand(cmd) {
+    if (cmd === 'まほう') {
+      const spellList = PLAYER_SPELLS.filter(s => s.minLv <= level);
+      if (spellList.length === 0) {
+        message = 'まだ まほうを おぼえていない！';
+        phase = 'player_attack'; messageTimer = 0;
+      } else {
+        magicCursor = 0;
+        magicPhase = true;
+      }
+      return;
+    }
     if (cmd === 'どうぐ') {
       // 回復アイテム一覧を取得
       itemList = Inventory.getAllWithIds().filter(i => i.healAmount > 0);
@@ -628,6 +732,17 @@ const Battle = (() => {
   }
 
   function enemyTurn() {
+    // 魔法を持つ敵はspellRateの確率で魔法を使用
+    if (enemy.spells && enemy.spells.length > 0 && Math.random() < (enemy.spellRate || 0.3)) {
+      const spell = enemy.spells[Math.floor(Math.random() * enemy.spells.length)];
+      const dmg = Math.max(1, spell.power + Math.floor(Math.random() * 10) - 5);
+      playerHp = Math.max(0, playerHp - dmg);
+      currentHp = playerHp;
+      message = `${enemy.name}は ${spell.name}をとなえた！\n${spell.msg}\n${PlayerData.getName()}に ${dmg} のダメージ！`;
+      phase = 'enemy_attack'; messageTimer = 0; flashPlayer = true; shakeAmount = 4;
+      return;
+    }
+    // 通常攻撃
     const defMod = defending ? playerDef * 2 : playerDef;
     const boostedAtk = Math.floor(enemy.atk * 1.5);
     const minDmg = Math.max(1, Math.floor(enemy.atk * 0.25));
@@ -697,19 +812,27 @@ const Battle = (() => {
     ctx.strokeStyle = '#888'; ctx.lineWidth = 1; ctx.strokeRect(W / 2 - barW / 2, 38, barW, 10);
 
     // プレイヤーステータス
-    const sw = 200, sh = 70;
+    const sw = 200, sh = 90;
     const sx = W - sw - 15, sy = H * 0.55 + 10;
     ctx.fillStyle = 'rgba(0,0,0,0.8)'; ctx.fillRect(sx, sy, sw, sh);
     ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.strokeRect(sx, sy, sw, sh);
     ctx.fillStyle = '#fff'; ctx.font = '13px sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText(`Lv${level}  ${PlayerData.getName()}`, sx + 10, sy + 20);
+    ctx.fillText(`Lv${level}  ${PlayerData.getName()}`, sx + 10, sy + 18);
+    // HP
     const phpRatio = playerHp / playerMaxHp;
-    ctx.fillText('HP', sx + 10, sy + 42);
-    ctx.fillStyle = '#333'; ctx.fillRect(sx + 35, sy + 33, 100, 10);
+    ctx.fillText('HP', sx + 10, sy + 38);
+    ctx.fillStyle = '#333'; ctx.fillRect(sx + 35, sy + 29, 100, 9);
     ctx.fillStyle = phpRatio > 0.3 ? '#40c040' : '#e04040';
-    ctx.fillRect(sx + 35, sy + 33, 100 * phpRatio, 10);
-    ctx.fillStyle = '#fff'; ctx.fillText(`${playerHp}/${playerMaxHp}`, sx + 140, sy + 42);
-    ctx.fillText(`EXP ${exp}/${level * 12}`, sx + 10, sy + 60);
+    ctx.fillRect(sx + 35, sy + 29, 100 * phpRatio, 9);
+    ctx.fillStyle = '#fff'; ctx.fillText(`${playerHp}/${playerMaxHp}`, sx + 140, sy + 38);
+    // MP
+    const pmpRatio = playerMaxMp > 0 ? currentMp / playerMaxMp : 0;
+    ctx.fillText('MP', sx + 10, sy + 56);
+    ctx.fillStyle = '#333'; ctx.fillRect(sx + 35, sy + 47, 100, 9);
+    ctx.fillStyle = '#4080e0';
+    ctx.fillRect(sx + 35, sy + 47, 100 * pmpRatio, 9);
+    ctx.fillStyle = '#fff'; ctx.fillText(`${currentMp}/${playerMaxMp}`, sx + 140, sy + 56);
+    ctx.fillText(`EXP ${exp}/${level * 12}`, sx + 10, sy + 78);
 
     if (flashPlayer && Math.floor(animTimer * 10) % 2 === 0) {
       ctx.fillStyle = 'rgba(255, 0, 0, 0.3)'; ctx.fillRect(sx, sy, sw, sh);
@@ -724,14 +847,36 @@ const Battle = (() => {
 
     // コマンド
     if (phase === 'select') {
-      const cw = 130, ch = 128, ccx = 15, ccy = H - mh - ch - 20;
+      const cw = 140, ch = 158, ccx = 15, ccy = H - mh - ch - 20;
       ctx.fillStyle = 'rgba(0,0,0,0.85)'; ctx.fillRect(ccx, ccy, cw, ch);
       ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(ccx, ccy, cw, ch);
-      ctx.font = '14px sans-serif';
+      ctx.font = '14px sans-serif'; ctx.textAlign = 'left';
       COMMANDS.forEach((cmd, i) => {
         ctx.fillStyle = i === cursor ? '#f0d060' : '#fff';
-        ctx.fillText(`${i === cursor ? '▶' : '　'} ${cmd}`, ccx + 12, ccy + 28 + i * 28);
+        ctx.fillText(`${i === cursor ? '▶' : '　'} ${cmd}`, ccx + 12, ccy + 28 + i * 26);
       });
+
+      // まほう選択ウィンドウ
+      if (magicPhase) {
+        const spellList = PLAYER_SPELLS.filter(s => s.minLv <= level);
+        const mww = 230, mwh = Math.max(60, 36 + spellList.length * 26);
+        const mwx = ccx + cw + 10, mwy = ccy;
+        ctx.fillStyle = 'rgba(0,0,0,0.9)'; ctx.fillRect(mwx, mwy, mww, mwh);
+        ctx.strokeStyle = '#a060ff'; ctx.lineWidth = 2; ctx.strokeRect(mwx, mwy, mww, mwh);
+        ctx.fillStyle = '#c080ff'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('★ まほう ★', mwx + mww / 2, mwy + 16);
+        ctx.font = '13px sans-serif'; ctx.textAlign = 'left';
+        spellList.forEach((spell, i) => {
+          const sel = i === magicCursor;
+          const mpEnough = currentMp >= spell.cost;
+          ctx.fillStyle = sel ? '#ffe080' : (mpEnough ? '#fff' : '#666');
+          ctx.fillText(`${sel ? '▶' : '　'} ${spell.name}`, mwx + 8, mwy + 36 + i * 26);
+          ctx.fillStyle = '#4080e0';
+          ctx.fillText(`MP:${spell.cost}`, mwx + 160, mwy + 36 + i * 26);
+        });
+        ctx.fillStyle = '#666'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('Esc:もどる', mwx + mww / 2, mwy + mwh - 5);
+      }
 
       // どうぐ選択ウィンドウ
       if (itemPhase) {
@@ -767,14 +912,15 @@ const Battle = (() => {
 
   // セーブ/ロード用
   function getSaveData() {
-    return { level, exp, currentHp: getCurrentHp() };
+    return { level, exp, currentHp: getCurrentHp(), currentMp: getCurrentMp() };
   }
 
   function loadSaveData(data) {
     level = data.level || 1;
     exp = data.exp || 0;
     currentHp = data.currentHp || getMaxHp();
+    currentMp = data.currentMp !== undefined ? data.currentMp : getMaxMp();
   }
 
-  return { start, startBoss, isActive, update, render, getPlayerStats, heal, getCurrentHp, getMaxHp, getLastResult, getSaveData, loadSaveData };
+  return { start, startBoss, isActive, update, render, getPlayerStats, heal, getCurrentHp, getMaxHp, getCurrentMp, getMaxMp, getLastResult, getSaveData, loadSaveData };
 })();

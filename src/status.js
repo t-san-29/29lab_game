@@ -126,6 +126,10 @@ const StatusScreen = (() => {
     ctx.fillText(`HP  ${stats.hp} / ${stats.maxHp}`, leftX, sy);
     sy += 22;
 
+    ctx.fillStyle = '#4080e0';
+    ctx.fillText(`MP  ${stats.mp} / ${stats.maxMp}`, leftX, sy);
+    sy += 22;
+
     const totalAtk = stats.atk + bonus.atk;
     const totalDef = stats.def + bonus.def;
     ctx.fillStyle = '#ff8060';
