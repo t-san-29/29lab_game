@@ -26,10 +26,9 @@ const GameMap = (() => {
     village: {
       width: 20,
       height: 15,
-      // 右建物: cols 14-18, rows 2-5, ドア(16,5)正面(南向き)
       data: [
-        6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
-        6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,
+        6,6,6,6,6,6,6,6,6,3,3,3,6,6,6,6,6,6,6,6,
+        6,0,0,0,0,0,0,0,0,3,3,3,0,0,0,0,0,0,0,6,
         6,0,0,0,0,3,3,3,3,3,3,3,3,0,1,1,1,1,1,6,
         6,0,0,1,1,1,1,3,0,0,0,0,3,0,1,5,5,5,1,6,
         6,0,0,1,5,5,1,3,0,0,0,0,3,0,1,5,5,5,1,6,
@@ -51,6 +50,7 @@ const GameMap = (() => {
             'ようこそ、冒険者よ！',
             'ここは「はじまりの村」じゃ。',
             '東のダンジョンには強い魔獣がおる。',
+            '北にも不気味な洞窟があるらしい...',
             '草むらでレベルを上げてから挑むんじゃぞ！',
           ]
         },
@@ -59,6 +59,7 @@ const GameMap = (() => {
             'いい天気ですね！',
             '左下の焚き火で肉を焼けるらしいですよ。',
             'Eキーでステータス、Cキーでクラフトですよ！',
+            '北の闇の洞窟には恐ろしい魔物がいるとか...',
           ]
         },
       ],
@@ -67,6 +68,9 @@ const GameMap = (() => {
         { x: 9, y: 14, target: 'sacred_grove', targetX: 10, targetY: 1 },
         { x: 10, y: 14, target: 'sacred_grove', targetX: 10, targetY: 1 },
         { x: 11, y: 14, target: 'sacred_grove', targetX: 10, targetY: 1 },
+        { x: 9, y: 0, target: 'dungeon_north_1', targetX: 10, targetY: 13 },
+        { x: 10, y: 0, target: 'dungeon_north_1', targetX: 10, targetY: 13 },
+        { x: 11, y: 0, target: 'dungeon_north_1', targetX: 10, targetY: 13 },
       ],
     },
     dungeon: {
@@ -149,6 +153,113 @@ const GameMap = (() => {
         { x: 11, y: 0, target: 'village', targetX: 10, targetY: 13 },
       ],
     },
+    // === 闇の洞窟 第1層 ===
+    dungeon_north_1: {
+      width: 20,
+      height: 15,
+      data: [
+        W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,
+        W,W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,W,
+        W,W,W,F,F,F,F,F,W,W,W,F,F,F,F,F,F,W,W,W,
+        W,W,F,F,F,F,W,F,F,F,F,F,W,F,F,F,F,F,W,W,
+        W,F,F,F,F,W,W,F,F,F,F,F,W,W,F,F,F,F,F,W,
+        W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,
+        W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,
+        W,F,F,F,W,W,F,F,F,F,F,F,F,F,W,W,F,F,F,W,
+        W,F,F,F,F,W,W,F,F,F,F,F,F,W,W,F,F,F,F,W,
+        W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,
+        W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,
+        W,W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,
+        W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,
+        W,W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,W,
+        W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,
+      ],
+      playerStart: { x: 10, y: 13 },
+      npcs: [
+        { id: 'dn1_sign', x: 10, y: 11, name: '看板', type: 'sign', color: '#8b6040',
+          dialog: [
+            'ここは闇の洞窟。強い魔物が住んでいる。',
+            '奥に進むほど危険になるぞ。覚悟はいいか？',
+          ]
+        },
+      ],
+      exits: [
+        { x: 9, y: 14, target: 'village', targetX: 10, targetY: 1 },
+        { x: 10, y: 14, target: 'village', targetX: 10, targetY: 1 },
+        { x: 11, y: 14, target: 'village', targetX: 10, targetY: 1 },
+        { x: 9, y: 0, target: 'dungeon_north_2', targetX: 10, targetY: 13 },
+        { x: 10, y: 0, target: 'dungeon_north_2', targetX: 10, targetY: 13 },
+        { x: 11, y: 0, target: 'dungeon_north_2', targetX: 10, targetY: 13 },
+      ],
+    },
+    // === 闇の洞窟 第2層 ===
+    dungeon_north_2: {
+      width: 20,
+      height: 15,
+      data: [
+        W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,
+        W,F,F,F,F,F,W,W,F,F,F,F,W,W,F,F,F,F,F,W,
+        W,F,F,F,F,F,F,W,F,F,F,F,W,F,F,F,F,F,F,W,
+        W,F,F,2,2,F,F,F,F,F,F,F,F,F,F,2,2,F,F,W,
+        W,F,F,2,2,F,F,F,F,F,F,F,F,F,F,2,2,F,F,W,
+        W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,
+        W,W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,
+        W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,
+        W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,
+        W,F,F,2,F,F,F,F,F,F,F,F,F,F,F,F,2,F,F,W,
+        W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,
+        W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,
+        W,W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,
+        W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,
+        W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,
+      ],
+      playerStart: { x: 10, y: 13 },
+      npcs: [],
+      exits: [
+        { x: 9, y: 14, target: 'dungeon_north_1', targetX: 10, targetY: 1 },
+        { x: 10, y: 14, target: 'dungeon_north_1', targetX: 10, targetY: 1 },
+        { x: 11, y: 14, target: 'dungeon_north_1', targetX: 10, targetY: 1 },
+        { x: 9, y: 0, target: 'dungeon_north_3', targetX: 10, targetY: 13 },
+        { x: 10, y: 0, target: 'dungeon_north_3', targetX: 10, targetY: 13 },
+        { x: 11, y: 0, target: 'dungeon_north_3', targetX: 10, targetY: 13 },
+      ],
+    },
+    // === 闇の洞窟 最深部 ===
+    dungeon_north_3: {
+      width: 20,
+      height: 15,
+      data: [
+        W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,
+        W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,
+        W,W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,
+        W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,
+        W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,
+        W,F,F,F,2,2,F,F,F,F,F,F,F,F,2,2,F,F,F,W,
+        W,F,F,F,2,F,F,F,F,F,F,F,F,F,F,2,F,F,F,W,
+        W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,
+        W,F,F,F,2,F,F,F,F,F,F,F,F,F,F,2,F,F,F,W,
+        W,F,F,F,2,2,F,F,F,F,F,F,F,F,2,2,F,F,F,W,
+        W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,
+        W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,
+        W,W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,
+        W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,
+        W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,
+      ],
+      playerStart: { x: 10, y: 13 },
+      npcs: [
+        { id: 'dn3_sign', x: 10, y: 10, name: '看板', type: 'sign', color: '#8b6040',
+          dialog: [
+            'ここは闇の洞窟の最深部。',
+            '最強の魔物がうろついている...引き返すなら今のうちだ。',
+          ]
+        },
+      ],
+      exits: [
+        { x: 9, y: 14, target: 'dungeon_north_2', targetX: 10, targetY: 1 },
+        { x: 10, y: 14, target: 'dungeon_north_2', targetX: 10, targetY: 1 },
+        { x: 11, y: 14, target: 'dungeon_north_2', targetX: 10, targetY: 1 },
+      ],
+    },
   };
 
   let currentMap = null;
@@ -223,19 +334,44 @@ const GameMap = (() => {
       }
     }
 
+    // マップラベル描画
+    ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
     if (currentMapName === 'village') {
-      ctx.fillStyle = '#ffe080'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText('→ダンジョン', 19 * ts + ts / 2, 7 * ts - 4);
       ctx.fillStyle = '#ffe080';
+      ctx.fillText('→ダンジョン', 19 * ts + ts / 2, 7 * ts - 4);
       ctx.fillText('↓聖なる森', 10 * ts + ts / 2, 14 * ts - 4);
+      ctx.fillStyle = '#ff8080';
+      ctx.fillText('↑闇の洞窟', 10 * ts + ts / 2, 0 * ts + ts + 10);
     }
     if (currentMapName === 'dungeon') {
-      ctx.fillStyle = '#80ffe0'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillStyle = '#80ffe0';
       ctx.fillText('←村へ戻る', 0 * ts + ts, 6 * ts - 4);
     }
     if (currentMapName === 'sacred_grove') {
-      ctx.fillStyle = '#80ffe0'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillStyle = '#80ffe0';
       ctx.fillText('↑村へ戻る', 10 * ts + ts / 2, 0 * ts + ts + 10);
+    }
+    if (currentMapName === 'dungeon_north_1') {
+      ctx.fillStyle = '#80ffe0';
+      ctx.fillText('↓村へ戻る', 10 * ts + ts / 2, 14 * ts - 4);
+      ctx.fillStyle = '#ff8080';
+      ctx.fillText('↑奥へ進む', 10 * ts + ts / 2, 0 * ts + ts + 10);
+      ctx.fillStyle = '#c080ff';
+      ctx.fillText('闇の洞窟 第1層', 10 * ts, 1 * ts + 6);
+    }
+    if (currentMapName === 'dungeon_north_2') {
+      ctx.fillStyle = '#80ffe0';
+      ctx.fillText('↓戻る', 10 * ts + ts / 2, 14 * ts - 4);
+      ctx.fillStyle = '#ff8080';
+      ctx.fillText('↑最深部へ', 10 * ts + ts / 2, 0 * ts + ts + 10);
+      ctx.fillStyle = '#c080ff';
+      ctx.fillText('闇の洞窟 第2層', 10 * ts, 1 * ts + 6);
+    }
+    if (currentMapName === 'dungeon_north_3') {
+      ctx.fillStyle = '#80ffe0';
+      ctx.fillText('↓戻る', 10 * ts + ts / 2, 14 * ts - 4);
+      ctx.fillStyle = '#ff4040';
+      ctx.fillText('闇の洞窟 最深部', 10 * ts, 1 * ts + 6);
     }
   }
 
