@@ -39,6 +39,56 @@ const Battle = (() => {
     },
   ];
 
+  // === ダンジョン敵データ ===
+  const DUNGEON_ENEMIES_1 = [
+    {
+      id: 'shadow_wolf', name: 'シャドウウルフ',
+      hp: 80, atk: 22, def: 10, exp: 80,
+      meat: { id: 'wolf_meat', name: '狼肉', desc: '野性味あふれる肉', healAmount: 8 },
+      material: { id: 'shadow_fang', name: '闇狼の牙', desc: '闇の力を帯びた牙', dropRate: 0.45 },
+      color: '#3a2a4a', draw: drawShadowWolf,
+    },
+    {
+      id: 'rock_golem', name: 'ロックゴーレム',
+      hp: 150, atk: 20, def: 16, exp: 100,
+      meat: { id: 'magic_stone_s', name: '小さな魔石', desc: '淡く光る石', healAmount: 10 },
+      material: { id: 'golem_core', name: 'ゴーレムの核', desc: '魔力が凝縮した核', dropRate: 0.35 },
+      color: '#6a6a7a', draw: drawGolem,
+    },
+  ];
+  const DUNGEON_ENEMIES_2 = [
+    {
+      id: 'rock_golem', name: 'ロックゴーレム',
+      hp: 150, atk: 20, def: 16, exp: 100,
+      meat: { id: 'magic_stone_s', name: '小さな魔石', desc: '淡く光る石', healAmount: 10 },
+      material: { id: 'golem_core', name: 'ゴーレムの核', desc: '魔力が凝縮した核', dropRate: 0.35 },
+      color: '#6a6a7a', draw: drawGolem,
+    },
+    {
+      id: 'dragon_puppy', name: 'ドラゴンパピー',
+      hp: 100, atk: 28, def: 12, exp: 130,
+      meat: { id: 'dragon_meat', name: '竜肉', desc: '生命力に満ちた肉', healAmount: 15 },
+      material: { id: 'dragon_scale', name: '竜の鱗', desc: '虹色に輝く硬い鱗', dropRate: 0.4 },
+      color: '#c04040', draw: drawDragonPuppy,
+    },
+  ];
+  const DUNGEON_ENEMIES_3 = [
+    {
+      id: 'dragon_puppy', name: 'ドラゴンパピー',
+      hp: 100, atk: 28, def: 12, exp: 130,
+      meat: { id: 'dragon_meat', name: '竜肉', desc: '生命力に満ちた肉', healAmount: 15 },
+      material: { id: 'dragon_scale', name: '竜の鱗', desc: '虹色に輝く硬い鱗', dropRate: 0.4 },
+      color: '#c04040', draw: drawDragonPuppy,
+    },
+    {
+      id: 'death_knight', name: 'デスナイト',
+      hp: 200, atk: 32, def: 20, exp: 200,
+      meat: { id: 'cursed_bone', name: '呪いの骨', desc: '不思議な力で回復する', healAmount: 20 },
+      material: { id: 'dark_armor_piece', name: '漆黒の鎧片', desc: '闇の力が宿る鎧の欠片', dropRate: 0.3 },
+      color: '#2a1a2a', draw: drawDeathKnight,
+    },
+  ];
+
   // ボスデータ
   const BOSSES = {
     murakon: {
@@ -166,6 +216,121 @@ const Battle = (() => {
     ctx.beginPath(); ctx.ellipse(cx, cy - 10, 60 + Math.sin(t) * 5, 55 + Math.cos(t) * 5, 0, 0, Math.PI * 2); ctx.stroke();
   }
 
+  // === ダンジョン敵の描画関数 ===
+  function drawShadowWolf(ctx, cx, cy) {
+    // 体
+    ctx.fillStyle = '#3a2a4a';
+    ctx.beginPath(); ctx.ellipse(cx, cy + 5, 35, 22, 0, 0, Math.PI * 2); ctx.fill();
+    // 頭
+    ctx.beginPath(); ctx.ellipse(cx - 28, cy - 10, 18, 14, -0.3, 0, 0, Math.PI * 2); ctx.fill();
+    // 耳
+    ctx.beginPath(); ctx.moveTo(cx - 38, cy - 22); ctx.lineTo(cx - 45, cy - 45); ctx.lineTo(cx - 30, cy - 25); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx - 25, cy - 22); ctx.lineTo(cx - 28, cy - 42); ctx.lineTo(cx - 18, cy - 25); ctx.fill();
+    // 目（赤く光る）
+    ctx.fillStyle = '#ff2040';
+    ctx.beginPath(); ctx.arc(cx - 35, cy - 14, 3, 0, Math.PI * 2); ctx.arc(cx - 25, cy - 14, 3, 0, Math.PI * 2); ctx.fill();
+    // 牙
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(cx - 42, cy - 2, 3, 8); ctx.fillRect(cx - 35, cy - 2, 3, 8);
+    // 足
+    ctx.fillStyle = '#2a1a3a';
+    ctx.fillRect(cx - 20, cy + 22, 6, 16); ctx.fillRect(cx + 14, cy + 22, 6, 16);
+    // しっぽ
+    ctx.strokeStyle = '#3a2a4a'; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(cx + 30, cy); ctx.quadraticCurveTo(cx + 50, cy - 20, cx + 45, cy - 35); ctx.stroke();
+    // オーラ
+    const t = performance.now() / 400;
+    ctx.strokeStyle = `rgba(100, 40, 160, ${0.2 + Math.sin(t) * 0.15})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.ellipse(cx, cy, 45 + Math.sin(t) * 3, 35 + Math.cos(t) * 3, 0, 0, Math.PI * 2); ctx.stroke();
+  }
+
+  function drawGolem(ctx, cx, cy) {
+    // 体
+    ctx.fillStyle = '#6a6a7a';
+    ctx.fillRect(cx - 30, cy - 20, 60, 50);
+    // 頭
+    ctx.fillStyle = '#7a7a8a';
+    ctx.fillRect(cx - 18, cy - 45, 36, 30);
+    // 目
+    ctx.fillStyle = '#40ff80';
+    ctx.beginPath(); ctx.arc(cx - 8, cy - 32, 4, 0, Math.PI * 2); ctx.arc(cx + 8, cy - 32, 4, 0, Math.PI * 2); ctx.fill();
+    // 腕
+    ctx.fillStyle = '#5a5a6a';
+    ctx.fillRect(cx - 48, cy - 15, 18, 40); ctx.fillRect(cx + 30, cy - 15, 18, 40);
+    // 足
+    ctx.fillRect(cx - 22, cy + 28, 16, 18); ctx.fillRect(cx + 6, cy + 28, 16, 18);
+    // ひび割れ模様
+    ctx.strokeStyle = '#4a4a5a'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(cx - 10, cy - 15); ctx.lineTo(cx - 5, cy + 5); ctx.lineTo(cx + 10, cy + 15); ctx.stroke();
+    // 核（光る）
+    const t = performance.now() / 300;
+    ctx.fillStyle = `rgba(64, 255, 128, ${0.5 + Math.sin(t) * 0.3})`;
+    ctx.beginPath(); ctx.arc(cx, cy + 5, 8, 0, Math.PI * 2); ctx.fill();
+  }
+
+  function drawDragonPuppy(ctx, cx, cy) {
+    // 体
+    ctx.fillStyle = '#c04040';
+    ctx.beginPath(); ctx.ellipse(cx, cy + 5, 30, 22, 0, 0, Math.PI * 2); ctx.fill();
+    // 頭
+    ctx.fillStyle = '#d05050';
+    ctx.beginPath(); ctx.arc(cx - 5, cy - 22, 16, 0, Math.PI * 2); ctx.fill();
+    // 角
+    ctx.fillStyle = '#e0a020';
+    ctx.beginPath(); ctx.moveTo(cx - 15, cy - 34); ctx.lineTo(cx - 20, cy - 55); ctx.lineTo(cx - 8, cy - 36); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx + 5, cy - 34); ctx.lineTo(cx + 10, cy - 55); ctx.lineTo(cx + 12, cy - 36); ctx.fill();
+    // 目
+    ctx.fillStyle = '#ff8000';
+    ctx.beginPath(); ctx.arc(cx - 12, cy - 24, 3, 0, Math.PI * 2); ctx.arc(cx + 2, cy - 24, 3, 0, Math.PI * 2); ctx.fill();
+    // 翼
+    ctx.fillStyle = '#a03030';
+    ctx.beginPath(); ctx.moveTo(cx + 15, cy - 10); ctx.lineTo(cx + 55, cy - 30); ctx.lineTo(cx + 50, cy + 5); ctx.lineTo(cx + 25, cy + 10); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx - 20, cy - 10); ctx.lineTo(cx - 55, cy - 25); ctx.lineTo(cx - 50, cy + 5); ctx.lineTo(cx - 25, cy + 10); ctx.fill();
+    // 足
+    ctx.fillStyle = '#903030';
+    ctx.fillRect(cx - 15, cy + 22, 8, 14); ctx.fillRect(cx + 7, cy + 22, 8, 14);
+    // 火の息
+    const t = performance.now() / 200;
+    ctx.fillStyle = `rgba(255, 100, 20, ${0.3 + Math.sin(t) * 0.2})`;
+    ctx.beginPath(); ctx.ellipse(cx - 5, cy - 6, 4 + Math.sin(t) * 2, 3, 0, 0, Math.PI * 2); ctx.fill();
+  }
+
+  function drawDeathKnight(ctx, cx, cy) {
+    // 鎧（体）
+    ctx.fillStyle = '#1a1a2a';
+    ctx.fillRect(cx - 25, cy - 20, 50, 55);
+    // 肩当て
+    ctx.fillStyle = '#2a2a3a';
+    ctx.fillRect(cx - 35, cy - 22, 15, 20); ctx.fillRect(cx + 20, cy - 22, 15, 20);
+    // トゲ
+    ctx.fillStyle = '#4a3060';
+    ctx.beginPath(); ctx.moveTo(cx - 35, cy - 22); ctx.lineTo(cx - 42, cy - 38); ctx.lineTo(cx - 28, cy - 22); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx + 35, cy - 22); ctx.lineTo(cx + 42, cy - 38); ctx.lineTo(cx + 28, cy - 22); ctx.fill();
+    // ヘルメット
+    ctx.fillStyle = '#2a2a3a';
+    ctx.beginPath(); ctx.arc(cx, cy - 35, 18, 0, Math.PI * 2); ctx.fill();
+    // バイザー
+    ctx.fillStyle = '#0a0a15';
+    ctx.fillRect(cx - 12, cy - 40, 24, 8);
+    // 目（紫の光）
+    const t = performance.now() / 300;
+    ctx.fillStyle = `rgba(180, 60, 255, ${0.6 + Math.sin(t) * 0.3})`;
+    ctx.beginPath(); ctx.arc(cx - 6, cy - 37, 3, 0, Math.PI * 2); ctx.arc(cx + 6, cy - 37, 3, 0, Math.PI * 2); ctx.fill();
+    // 剣
+    ctx.fillStyle = '#888';
+    ctx.fillRect(cx + 30, cy - 50, 4, 60);
+    ctx.fillStyle = '#666';
+    ctx.fillRect(cx + 24, cy - 2, 16, 4);
+    // 足
+    ctx.fillStyle = '#1a1a2a';
+    ctx.fillRect(cx - 18, cy + 33, 12, 14); ctx.fillRect(cx + 6, cy + 33, 12, 14);
+    // オーラ
+    ctx.strokeStyle = `rgba(140, 40, 200, ${0.25 + Math.sin(t * 0.8) * 0.15})`;
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.ellipse(cx, cy, 48 + Math.sin(t) * 4, 55 + Math.cos(t) * 4, 0, 0, Math.PI * 2); ctx.stroke();
+  }
+
   // === バトル状態 ===
   let active = false;
   let enemy = null;
@@ -238,12 +403,28 @@ const Battle = (() => {
   }
 
   // === バトル開始 ===
-  function start() {
-    // レベルが低いときはツキノワグマの出現率を下げる
+  function start(mapName) {
+    // ダンジョン別の敵プール
+    if (mapName === 'dungeon_north_1') {
+      const pool = DUNGEON_ENEMIES_1;
+      beginBattle({ ...pool[Math.floor(Math.random() * pool.length)] });
+      return;
+    }
+    if (mapName === 'dungeon_north_2') {
+      const pool = DUNGEON_ENEMIES_2;
+      beginBattle({ ...pool[Math.floor(Math.random() * pool.length)] });
+      return;
+    }
+    if (mapName === 'dungeon_north_3') {
+      const pool = DUNGEON_ENEMIES_3;
+      beginBattle({ ...pool[Math.floor(Math.random() * pool.length)] });
+      return;
+    }
+
+    // 通常フィールド
     let pool = ENEMIES;
     if (level < 5) {
       pool = ENEMIES.filter(e => e.id !== 'bear');
-      // Lv3以上なら低確率で出る
       if (level >= 3 && Math.random() < 0.15) {
         const bear = ENEMIES.find(e => e.id === 'bear');
         beginBattle({ ...bear });
@@ -522,5 +703,16 @@ const Battle = (() => {
 
   function getLastResult() { return resultType; }
 
-  return { start, startBoss, isActive, update, render, getPlayerStats, heal, getCurrentHp, getMaxHp, getLastResult };
+  // セーブ/ロード用
+  function getSaveData() {
+    return { level, exp, currentHp: getCurrentHp() };
+  }
+
+  function loadSaveData(data) {
+    level = data.level || 1;
+    exp = data.exp || 0;
+    currentHp = data.currentHp || getMaxHp();
+  }
+
+  return { start, startBoss, isActive, update, render, getPlayerStats, heal, getCurrentHp, getMaxHp, getLastResult, getSaveData, loadSaveData };
 })();

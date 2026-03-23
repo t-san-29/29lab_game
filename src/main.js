@@ -52,7 +52,7 @@
     lastPlayerX = targetX;
     lastPlayerY = targetY;
     // マップに応じたBGM切り替え
-    const bgm = mapName === 'village' ? 'village' : mapName === 'sacred_grove' ? 'village' : 'dungeon';
+    const bgm = (mapName === 'village' || mapName === 'sacred_grove') ? 'village' : 'dungeon';
     if (currentBgmScene !== bgm) {
       BGM.playTrack(bgm);
       currentBgmScene = bgm;
@@ -64,12 +64,15 @@
     lastPlayerX = Player.x;
     lastPlayerY = Player.y;
     const tile = GameMap.getTile(Player.x, Player.y);
-    if (tile !== GameMap.TILES.GRASS) return;
+    const mapName = GameMap.getCurrentMapName();
+    const isGrass = tile === GameMap.TILES.GRASS;
+    const isDungeonFloor = tile === GameMap.TILES.CAVE_FLOOR && mapName.startsWith('dungeon_north');
+    if (!isGrass && !isDungeonFloor) return;
     stepCount++;
     if (stepCount <= 5) return;
     if (Math.random() < ENCOUNTER_CHANCE) {
       stepCount = 0;
-      Battle.start();
+      Battle.start(mapName);
       BGM.playTrack('battle');
     }
   }

@@ -1,10 +1,17 @@
 // ステータス・装備画面
 const StatusScreen = (() => {
   let showUI = false;
-  let cursor = 0;         // 0=weapon, 1=armor
+  let cursor = 0;         // 0=weapon, 1=armor, 2=accessory1, 3=accessory2
   let selectMode = false;  // 装備選択中
   let selectCursor = 0;
   let availableItems = [];
+
+  const SLOTS = [
+    { key: 'weapon',     label: '武器' },
+    { key: 'armor',      label: '防具' },
+    { key: 'accessory1', label: '装飾1' },
+    { key: 'accessory2', label: '装飾2' },
+  ];
 
   function isOpen() { return showUI; }
 
@@ -38,7 +45,6 @@ const StatusScreen = (() => {
 
     if (selectMode) {
       // 装備選択モード
-      // availableItems: [{id, name, ...}, ...] + "はずす" option
       const totalOptions = availableItems.length + 1; // +1 for "はずす"
 
       if (Engine.isKeyJustPressed('ArrowUp') || Engine.isKeyJustPressed('w')) {
@@ -48,28 +54,27 @@ const StatusScreen = (() => {
         selectCursor = (selectCursor + 1) % totalOptions;
       }
       if (Engine.isKeyJustPressed(' ') || Engine.isKeyJustPressed('Enter')) {
+        const slot = SLOTS[cursor].key;
         if (selectCursor === 0) {
           // はずす
-          const slot = cursor === 0 ? 'weapon' : 'armor';
           Equipment.unequip(slot);
         } else {
           // 装備する
           const item = availableItems[selectCursor - 1];
-          Equipment.equip(item.id);
+          Equipment.equip(item.id, slot);
         }
         selectMode = false;
       }
     } else {
       // スロット選択モード
       if (Engine.isKeyJustPressed('ArrowUp') || Engine.isKeyJustPressed('w')) {
-        cursor = (cursor - 1 + 2) % 2;
+        cursor = (cursor - 1 + SLOTS.length) % SLOTS.length;
       }
       if (Engine.isKeyJustPressed('ArrowDown') || Engine.isKeyJustPressed('s')) {
-        cursor = (cursor + 1) % 2;
+        cursor = (cursor + 1) % SLOTS.length;
       }
       if (Engine.isKeyJustPressed(' ') || Engine.isKeyJustPressed('Enter')) {
-        // 装備選択モードへ
-        const slot = cursor === 0 ? 'weapon' : 'armor';
+        const slot = SLOTS[cursor].key;
         availableItems = Equipment.getAvailable(slot);
         selectCursor = 0;
         selectMode = true;
@@ -144,22 +149,19 @@ const StatusScreen = (() => {
 
     // === 右側: 装備スロット ===
     const eq = Equipment.getEquipped();
-    const rightX = W / 2 + 20;
+    const rightX = W / 2 + 10;
     const eqY = pad + 55;
 
     ctx.fillStyle = '#ffcc40';
     ctx.font = 'bold 14px sans-serif';
     ctx.fillText('そうび', rightX, eqY);
 
-    ctx.font = '14px sans-serif';
-    const slots = [
-      { label: '武器', item: eq.weapon },
-      { label: '防具', item: eq.armor },
-    ];
+    ctx.font = '13px sans-serif';
 
-    slots.forEach((slot, i) => {
-      const y = eqY + 30 + i * 40;
+    SLOTS.forEach((slot, i) => {
+      const y = eqY + 26 + i * 34;
       const selected = !selectMode && cursor === i;
+      const item = eq[slot.key];
 
       // ラベル
       ctx.fillStyle = '#aaa';
@@ -167,24 +169,24 @@ const StatusScreen = (() => {
 
       // 装備名
       ctx.fillStyle = selected ? '#ffe080' : '#fff';
-      const equipName = slot.item ? slot.item.name : '---';
+      const equipName = item ? item.name : '---';
       ctx.fillText(`${selected ? '▶' : '　'} ${equipName}`, rightX + 50, y);
 
       // ステータスボーナス
-      if (slot.item) {
+      if (item) {
         ctx.fillStyle = '#888';
         let bonusText = '';
-        if (slot.item.atk > 0) bonusText += `ATK+${slot.item.atk} `;
-        if (slot.item.def > 0) bonusText += `DEF+${slot.item.def}`;
-        ctx.fillText(bonusText, rightX + 50, y + 16);
+        if (item.atk > 0) bonusText += `ATK+${item.atk} `;
+        if (item.def > 0) bonusText += `DEF+${item.def}`;
+        ctx.fillText(bonusText, rightX + 50, y + 14);
       }
     });
 
     // === 装備選択パネル ===
     if (selectMode) {
-      const panelW = 250, panelH = 40 + (availableItems.length + 1) * 28;
+      const panelW = 250, panelH = 40 + (availableItems.length + 1) * 26;
       const panelX = W / 2 + 10;
-      const panelY = eqY + 110;
+      const panelY = eqY + 26 + SLOTS.length * 34 + 5;
 
       ctx.fillStyle = 'rgba(0, 0, 40, 0.95)';
       ctx.fillRect(panelX, panelY, panelW, panelH);
@@ -201,19 +203,19 @@ const StatusScreen = (() => {
       // はずすオプション
       const sel0 = selectCursor === 0;
       ctx.fillStyle = sel0 ? '#ffe080' : '#aaa';
-      ctx.fillText(`${sel0 ? '▶' : '　'} はずす`, panelX + 10, panelY + 40);
+      ctx.fillText(`${sel0 ? '▶' : '　'} はずす`, panelX + 10, panelY + 38);
 
       // 装備候補
       availableItems.forEach((item, i) => {
-        const y = panelY + 40 + (i + 1) * 28;
+        const y = panelY + 38 + (i + 1) * 26;
         const sel = selectCursor === i + 1;
         ctx.fillStyle = sel ? '#ffe080' : '#fff';
         ctx.fillText(`${sel ? '▶' : '　'} ${item.name}`, panelX + 10, y);
         ctx.fillStyle = '#888';
         let bText = '';
-        if (item.atk > 0) bText += `ATK+${item.atk} `;
-        if (item.def > 0) bText += `DEF+${item.def}`;
-        ctx.fillText(bText, panelX + 160, y);
+        if (item.atk > 0) bText += `A+${item.atk} `;
+        if (item.def > 0) bText += `D+${item.def}`;
+        ctx.fillText(bText, panelX + 170, y);
       });
     }
 
