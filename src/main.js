@@ -17,6 +17,9 @@
   let bgmStarted = false; // BGM開始済み
   let currentBgmScene = ''; // 現在のBGMシーン
   let holySwordObtained = false; // 聖剣入手済み
+  let lastBossId = ''; // 最後に倒したボスID
+  let murakonDefeatedTime = 0; // ムラコン撃破時刻（復活タイマー用）
+  const MURAKON_RESPAWN_MS = 5 * 60 * 1000; // 5分で復活
 
   // === ゲーム本体の初期化（名前決定後に呼ぶ） ===
   let map, stepCount, lastPlayerX, lastPlayerY;
@@ -93,10 +96,29 @@
   function checkBossTrigger() {
     const bossNpc = NPC.consumeCompletedBoss();
     if (bossNpc && bossNpc.bossId) {
-      // ムラコンは消さない（再戦可能）
+      lastBossId = bossNpc.bossId;
       Battle.startBoss(bossNpc.bossId);
       BGM.playTrack('boss');
       wasBossBattle = true;
+    }
+  }
+
+  // ムラコン復活チェック
+  function checkMurakonRespawn() {
+    if (murakonDefeatedTime > 0 && GameMap.getCurrentMapName() === 'dungeon') {
+      if (Date.now() - murakonDefeatedTime >= MURAKON_RESPAWN_MS) {
+        murakonDefeatedTime = 0;
+        // ムラコンNPCがいなければ再追加
+        const murakonData = {
+          id: 'murakon', x: 16, y: 7, name: '魔獣ムラコン', type: 'boss', bossId: 'murakon', color: '#8020a0',
+          dialog: [
+            'グルルル......また来たか、人間め！',
+            '何度でも相手になってやる！',
+            '我が牙の錆にしてくれる！',
+          ]
+        };
+        NPC.addNpc(murakonData);
+      }
     }
   }
 
@@ -130,15 +152,32 @@
           'まだ体が痛む...でも、あきらめないぞ。',
         ]);
         wasBossBattle = false;
+        lastBossId = '';
       } else if (result === 'win' && wasBossBattle) {
-        // ボス勝利 → エンディング
         wasBossBattle = false;
-        gamePhase = 'ending';
-        endingPhase = 0;
-        endingTimer = 0;
-        BGM.playTrack('ending');
+        if (lastBossId === 'oobaan') {
+          // オオバーン撃破 → エンディング
+          gamePhase = 'ending';
+          endingPhase = 0;
+          endingTimer = 0;
+          BGM.playTrack('ending');
+        } else if (lastBossId === 'murakon') {
+          // ムラコン撃破 → エンディングには行かない、5分後に復活
+          NPC.removeNpc('murakon');
+          murakonDefeatedTime = Date.now();
+          NPC.showMonologue([
+            '魔獣ムラコンを倒した！',
+            'しかし...北の闇の洞窟から、もっと恐ろしい気配がする...',
+            'まだ冒険は終わらないようだ。',
+          ]);
+          BGM.playTrack(currentBgmScene);
+        } else {
+          BGM.playTrack(currentBgmScene);
+        }
+        lastBossId = '';
       } else {
         wasBossBattle = false;
+        lastBossId = '';
         // 通常勝利/逃走 → マップBGMに戻す
         BGM.playTrack(currentBgmScene);
       }
@@ -196,6 +235,7 @@
 
     checkBossTrigger();
     checkSwordPickup();
+    checkMurakonRespawn();
     Inventory.update();
     StatusScreen.update();
     Crafting.update();

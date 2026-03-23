@@ -98,6 +98,13 @@ const Battle = (() => {
       material: { id: 'murakon_scale', name: 'ムラコンの鱗', desc: '禍々しい鱗', dropRate: 1.0 },
       color: '#8020a0', draw: drawMurakon, isBoss: true,
     },
+    oobaan: {
+      id: 'oobaan', name: '闇竜オオバーン',
+      hp: 350, atk: 40, def: 25, exp: 500,
+      meat: { id: 'oobaan_fang', name: 'オオバーンの牙', desc: '灼熱の力を帯びた巨大な牙' },
+      material: { id: 'oobaan_scale', name: 'オオバーンの鱗', desc: '溶岩のように赤く光る鱗', dropRate: 1.0 },
+      color: '#a01020', draw: drawOobaan, isBoss: true,
+    },
   };
 
   // === 描画関数 ===
@@ -214,6 +221,59 @@ const Battle = (() => {
     ctx.strokeStyle = `rgba(160, 40, 255, ${0.3 + Math.sin(t) * 0.2})`;
     ctx.lineWidth = 3;
     ctx.beginPath(); ctx.ellipse(cx, cy - 10, 60 + Math.sin(t) * 5, 55 + Math.cos(t) * 5, 0, 0, Math.PI * 2); ctx.stroke();
+  }
+
+  // === オオバーン描画 ===
+  function drawOobaan(ctx, cx, cy) {
+    const t = performance.now() / 300;
+    // 巨大な体
+    ctx.fillStyle = '#6a1020';
+    ctx.beginPath(); ctx.ellipse(cx, cy + 15, 60, 45, 0, 0, Math.PI * 2); ctx.fill();
+    // 頭
+    ctx.fillStyle = '#8a1830';
+    ctx.beginPath(); ctx.arc(cx, cy - 40, 32, 0, Math.PI * 2); ctx.fill();
+    // 角（4本）
+    ctx.fillStyle = '#d04020';
+    ctx.beginPath(); ctx.moveTo(cx - 25, cy - 60); ctx.lineTo(cx - 35, cy - 100); ctx.lineTo(cx - 15, cy - 65); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx + 25, cy - 60); ctx.lineTo(cx + 35, cy - 100); ctx.lineTo(cx + 15, cy - 65); ctx.fill();
+    ctx.fillStyle = '#c03018';
+    ctx.beginPath(); ctx.moveTo(cx - 15, cy - 65); ctx.lineTo(cx - 20, cy - 88); ctx.lineTo(cx - 5, cy - 68); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx + 15, cy - 65); ctx.lineTo(cx + 20, cy - 88); ctx.lineTo(cx + 5, cy - 68); ctx.fill();
+    // 目（炎のように光る）
+    ctx.fillStyle = `rgba(255, 160, 0, ${0.7 + Math.sin(t * 2) * 0.3})`;
+    ctx.beginPath(); ctx.arc(cx - 14, cy - 45, 6, 0, Math.PI * 2); ctx.arc(cx + 14, cy - 45, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(cx - 14, cy - 46, 2, 0, Math.PI * 2); ctx.arc(cx + 14, cy - 46, 2, 0, Math.PI * 2); ctx.fill();
+    // 口（炎が漏れる）
+    ctx.fillStyle = '#ff6020';
+    ctx.beginPath(); ctx.moveTo(cx - 18, cy - 25); ctx.lineTo(cx, cy - 18); ctx.lineTo(cx + 18, cy - 25);
+    ctx.lineTo(cx + 12, cy - 20); ctx.lineTo(cx, cy - 15); ctx.lineTo(cx - 12, cy - 20); ctx.fill();
+    // 牙
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.moveTo(cx - 14, cy - 25); ctx.lineTo(cx - 10, cy - 14); ctx.lineTo(cx - 6, cy - 25); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx + 14, cy - 25); ctx.lineTo(cx + 10, cy - 14); ctx.lineTo(cx + 6, cy - 25); ctx.fill();
+    // 翼
+    ctx.fillStyle = '#5a0a15';
+    ctx.beginPath(); ctx.moveTo(cx - 40, cy - 10); ctx.lineTo(cx - 90, cy - 50); ctx.lineTo(cx - 80, cy + 10); ctx.lineTo(cx - 45, cy + 20); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx + 40, cy - 10); ctx.lineTo(cx + 90, cy - 50); ctx.lineTo(cx + 80, cy + 10); ctx.lineTo(cx + 45, cy + 20); ctx.fill();
+    // 翼の骨
+    ctx.strokeStyle = '#8a2030'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(cx - 40, cy - 5); ctx.lineTo(cx - 85, cy - 45); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx + 40, cy - 5); ctx.lineTo(cx + 85, cy - 45); ctx.stroke();
+    // 腕
+    ctx.fillStyle = '#6a1020';
+    ctx.fillRect(cx - 65, cy - 5, 18, 45); ctx.fillRect(cx + 47, cy - 5, 18, 45);
+    // 爪
+    ctx.fillStyle = '#d04020';
+    ctx.fillRect(cx - 68, cy + 35, 5, 12); ctx.fillRect(cx - 60, cy + 37, 5, 12);
+    ctx.fillRect(cx + 55, cy + 35, 5, 12); ctx.fillRect(cx + 63, cy + 37, 5, 12);
+    // 炎のオーラ
+    ctx.strokeStyle = `rgba(255, 80, 20, ${0.3 + Math.sin(t) * 0.2})`;
+    ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.ellipse(cx, cy - 5, 70 + Math.sin(t) * 6, 65 + Math.cos(t) * 6, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = `rgba(255, 200, 40, ${0.15 + Math.sin(t * 1.5) * 0.1})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.ellipse(cx, cy - 5, 80 + Math.cos(t) * 5, 72 + Math.sin(t) * 5, 0, 0, Math.PI * 2); ctx.stroke();
   }
 
   // === ダンジョン敵の描画関数 ===

@@ -253,6 +253,14 @@ const GameMap = (() => {
             '最強の魔物がうろついている...引き返すなら今のうちだ。',
           ]
         },
+        { id: 'oobaan', x: 10, y: 3, name: '闇竜オオバーン', type: 'boss', bossId: 'oobaan', color: '#a01020',
+          dialog: [
+            'グオオオオオオ......！！',
+            'この闇の底にまで辿り着くとはな...人間。',
+            'だが...ここがお前の墓場だ！',
+            '我が炎で、灰にしてくれる！！',
+          ]
+        },
       ],
       exits: [
         { x: 9, y: 14, target: 'dungeon_north_2', targetX: 10, targetY: 1 },

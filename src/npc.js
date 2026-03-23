@@ -12,6 +12,13 @@ const NPC = (() => {
     npcs = npcs.filter(n => n.id !== npcId);
   }
 
+  function addNpc(npcData) {
+    // 同IDがいなければ追加
+    if (!npcs.find(n => n.id === npcData.id)) {
+      npcs.push({ ...npcData });
+    }
+  }
+
   function getAt(x, y) {
     return npcs.find(n => n.x === x && n.y === y) || null;
   }
@@ -169,5 +176,5 @@ const NPC = (() => {
     ctx.fillText(hint, W - 24, boxY + boxH - 12);
   }
 
-  return { init, removeNpc, getAt, isDialogActive, showMonologue, consumeCompletedBoss, consumeCompleted, update, renderNPCs, renderDialog };
+  return { init, removeNpc, addNpc, getAt, isDialogActive, showMonologue, consumeCompletedBoss, consumeCompleted, update, renderNPCs, renderDialog };
 })();
