@@ -158,7 +158,7 @@ const GameMap = (() => {
       width: 20,
       height: 15,
       data: [
-        W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,
+        W,W,W,W,W,W,W,W,W,F,F,F,W,W,W,W,W,W,W,W,
         W,W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,W,
         W,W,W,F,F,F,F,F,W,W,W,F,F,F,F,F,F,W,W,W,
         W,W,F,F,F,F,W,F,F,F,F,F,W,F,F,F,F,F,W,W,
@@ -172,7 +172,7 @@ const GameMap = (() => {
         W,W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,
         W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,
         W,W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,W,
-        W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,
+        W,W,W,W,W,W,W,W,W,F,F,F,W,W,W,W,W,W,W,W,
       ],
       playerStart: { x: 10, y: 13 },
       npcs: [
@@ -197,7 +197,7 @@ const GameMap = (() => {
       width: 20,
       height: 15,
       data: [
-        W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,
+        W,W,W,W,W,W,W,W,W,F,F,F,W,W,W,W,W,W,W,W,
         W,F,F,F,F,F,W,W,F,F,F,F,W,W,F,F,F,F,F,W,
         W,F,F,F,F,F,F,W,F,F,F,F,W,F,F,F,F,F,F,W,
         W,F,F,2,2,F,F,F,F,F,F,F,F,F,F,2,2,F,F,W,
@@ -211,7 +211,7 @@ const GameMap = (() => {
         W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,
         W,W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,
         W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,
-        W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,
+        W,W,W,W,W,W,W,W,W,F,F,F,W,W,W,W,W,W,W,W,
       ],
       playerStart: { x: 10, y: 13 },
       npcs: [],
@@ -243,7 +243,7 @@ const GameMap = (() => {
         W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,
         W,W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,
         W,W,W,F,F,F,F,F,F,F,F,F,F,F,F,F,F,W,W,W,
-        W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,
+        W,W,W,W,W,W,W,W,W,F,F,F,W,W,W,W,W,W,W,W,
       ],
       playerStart: { x: 10, y: 13 },
       npcs: [
