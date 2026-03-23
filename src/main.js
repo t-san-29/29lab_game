@@ -152,7 +152,22 @@
   }
 
   function checkExit() {
-    const exit = GameMap.getExit(Player.x, Player.y);
+    // プレイヤーの現在地で出口チェック
+    let exit = GameMap.getExit(Player.x, Player.y);
+    // 現在地に出口がなければ、向いている方向の隣タイルもチェック
+    // （壁タイルに出口が設定されている場合に対応）
+    if (!exit) {
+      const facing = Player.getFacing();
+      exit = GameMap.getExit(facing.x, facing.y);
+      if (exit) {
+        // 向いている方向のタイルが壁なら、隣接している場合だけ発動
+        const dx = facing.x - Player.x;
+        const dy = facing.y - Player.y;
+        const isEdge = (dx === 0 && (facing.y === 0 || facing.y === GameMap.getHeight() - 1)) ||
+                       (dy === 0 && (facing.x === 0 || facing.x === GameMap.getWidth() - 1));
+        if (!isEdge) exit = null;
+      }
+    }
     if (exit) changeMap(exit.target, exit.targetX, exit.targetY);
   }
 

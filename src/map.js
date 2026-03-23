@@ -281,6 +281,8 @@ const GameMap = (() => {
   }
 
   function getCurrentMapName() { return currentMapName; }
+  function getWidth() { return currentMap ? currentMap.width : 0; }
+  function getHeight() { return currentMap ? currentMap.height : 0; }
 
   function getTile(x, y) {
     if (!currentMap) return TILES.WALL;
@@ -384,7 +386,7 @@ const GameMap = (() => {
   }
 
   return {
-    TILES, load, getTile, isSolid, render, getExit, getCurrentMapName,
+    TILES, load, getTile, isSolid, render, getExit, getCurrentMapName, getWidth, getHeight,
     get current() { return currentMap; }
   };
 })();
