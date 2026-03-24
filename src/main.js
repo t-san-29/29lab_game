@@ -448,7 +448,11 @@
       return;
     }
 
-    if (Battle.isActive()) { Battle.render(ctx); return; }
+    if (Battle.isActive()) {
+      if (Engine.isTouchDevice) Engine.setTouchButtons([]);
+      Battle.render(ctx);
+      return;
+    }
 
     GameMap.render(ctx);
     NPC.renderNPCs(ctx);
@@ -464,16 +468,47 @@
     const bonus = Equipment.getBonus();
     const pName = PlayerData.getName();
     ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.fillRect(0, 0, 340, 22);
+    ctx.fillRect(0, 0, 400, 22);
     ctx.fillStyle = '#fff';
     ctx.font = '12px sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText(`Lv${stats.level} ${pName}  HP ${stats.hp}/${stats.maxHp}  ATK ${stats.atk + bonus.atk}  DEF ${stats.def + bonus.def}`, 8, 15);
+    ctx.fillText(`Lv${stats.level} ${pName}  HP ${stats.hp}/${stats.maxHp}  MP ${stats.mp}/${stats.maxMp}  ATK ${stats.atk + bonus.atk}  DEF ${stats.def + bonus.def}`, 8, 15);
 
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
-    ctx.font = '10px sans-serif';
-    ctx.textAlign = 'right';
-    ctx.fillText('移動:矢印  話す:Space  I:持物  E:装備  C:クラフト  P:セーブ', Engine.WIDTH - 8, 15);
+    if (Engine.isTouchDevice) {
+      // スマホ用タッチボタン
+      const btnDefs = [
+        { label: 'セーブ', key: 'p' },
+        { label: 'もちもの', key: 'i' },
+        { label: 'そうび', key: 'e' },
+        { label: 'クラフト', key: 'c' },
+        { label: 'Esc', key: 'Escape' },
+      ];
+      const btnW = 58, btnH = 28, gap = 4;
+      const totalW = btnDefs.length * (btnW + gap) - gap;
+      const startX = Engine.WIDTH / 2 - totalW / 2;
+      const btnY = Engine.HEIGHT - 30;
+      const buttons = [];
+      btnDefs.forEach((def, i) => {
+        const bx = startX + i * (btnW + gap);
+        buttons.push({ id: def.label, x: bx, y: btnY, w: btnW, h: btnH, key: def.key });
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(bx, btnY, btnW, btnH);
+        ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(bx, btnY, btnW, btnH);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(def.label, bx + btnW / 2, btnY + 19);
+      });
+      Engine.setTouchButtons(buttons);
+    } else {
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText('移動:矢印  話す:Space  I:持物  E:装備  C:クラフト  P:セーブ', Engine.WIDTH - 8, 15);
+      Engine.setTouchButtons([]);
+    }
 
     // セーブメッセージ
     if (saveMessage) {

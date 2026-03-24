@@ -23,6 +23,17 @@ const Engine = (() => {
     keys[e.key] = false;
   });
 
+  // --- タッチボタン ---
+  const touchButtons = []; // { id, x, y, w, h, key }
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+  function setTouchButtons(buttons) {
+    touchButtons.length = 0;
+    buttons.forEach(b => touchButtons.push(b));
+  }
+
+  function getTouchButtons() { return touchButtons; }
+
   // --- タッチ入力 ---
   let touchStartX = 0, touchStartY = 0, touchStartTime = 0;
   let touchHoldKey = null; // スワイプで押しっぱなしにするキー
@@ -55,10 +66,22 @@ const Engine = (() => {
     const elapsed = Date.now() - touchStartTime;
 
     if (dist < 20) {
-      // タップ → スペースキー扱い
-      justPressed[' '] = true;
-      keys[' '] = true;
-      setTimeout(() => { keys[' '] = false; }, 50);
+      // タップ → ボタン判定
+      const pos = getCanvasPos(t);
+      const btn = touchButtons.find(b =>
+        pos.x >= b.x && pos.x <= b.x + b.w &&
+        pos.y >= b.y && pos.y <= b.y + b.h
+      );
+      if (btn) {
+        justPressed[btn.key] = true;
+        keys[btn.key] = true;
+        setTimeout(() => { keys[btn.key] = false; }, 80);
+      } else {
+        // ボタン外タップ → スペースキー扱い
+        justPressed[' '] = true;
+        keys[' '] = true;
+        setTimeout(() => { keys[' '] = false; }, 50);
+      }
     } else if (dist > 30) {
       // スワイプ → 方向キー（押しっぱなしにする）
       let key;
@@ -137,6 +160,7 @@ const Engine = (() => {
 
   return {
     canvas, ctx, TILE_SIZE, SCREEN_COLS, SCREEN_ROWS, WIDTH, HEIGHT,
-    isKeyDown, isKeyJustPressed, simulateKey, start
+    isKeyDown, isKeyJustPressed, simulateKey, start,
+    isTouchDevice, setTouchButtons, getTouchButtons,
   };
 })();
