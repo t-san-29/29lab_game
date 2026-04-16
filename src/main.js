@@ -4,7 +4,7 @@
   const NAME_CHOICES = [
     'レイ・ララー',
     'ミズキチ・イェーガー',
-    'ヒータン・ミータン',
+    'キュウイチ・ロウ',
   ];
   let gamePhase = 'title'; // title → name_select → playing → ending
   let nameCursor = 0;
